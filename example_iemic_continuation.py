@@ -2,6 +2,8 @@ from iemic import initialize_global_iemic
 
 from fvm import Continuation
 
+from omuse.io import write_set_to_file
+
 if __name__=="__main__":
     instance=initialize_global_iemic()
 

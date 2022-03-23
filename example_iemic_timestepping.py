@@ -1,4 +1,7 @@
-from iemic import initialize_global_iemic, timestepper
+from iemic import initialize_global_iemic
+
+from omuse.io import write_set_to_file
+
 
 if __name__=="__main__":
     instance=initialize_global_iemic()
@@ -7,6 +10,9 @@ if __name__=="__main__":
 
     # the following line optionally redirects iemic output to file
     #~ instance.set_output_file("output.%p")
+
+    # set forcing to full
+    instance.parameters.Ocean__THCM__Starting_Parameters__Combined_Forcing=.01
 
     #print out all initial parameters
     print(instance.parameters)

@@ -165,11 +165,11 @@ Ocean__THCM__Starting_Parameters__Vertical_Peclet_Number: 0.0002548
 Ocean__THCM__Starting_Parameters__Wind_Forcing: 1.0
 """
 
-def initialize_global_iemic(number_of_workers=1):
+def initialize_global_iemic(number_of_workers=1, redirection="null"):
 
     print(f"initializing IEMIC with {number_of_workers} workers")  
       
-    i = iemic(number_of_workers=number_of_workers)#redirection="none", debugger="gdb", channel_type="sockets")
+    i = iemic(number_of_workers=number_of_workers,redirection=redirection)#, debugger="gdb", channel_type="sockets")
 
     i.parameters.Ocean__Belos_Solver__FGMRES_tolerance=1e-03
     i.parameters.Ocean__Belos_Solver__FGMRES_iterations=800
