@@ -1,0 +1,233 @@
+"""
+  example for running I-EMIC in a global configuration using OMUSE
+  
+"""
+
+import numpy
+
+from omuse.units import units, constants
+from omuse.units import trigo
+
+from omuse.community.iemic.interface import iemic
+
+from omuse.io import write_set_to_file, read_set_from_file
+
+from fvm import Continuation
+
+from omuse.units import units
+
+import numpy
+
+# some utility functions
+# note that i-emic defines depth levels as negative numbers!
+
+def depth_levels(N, stretch_factor=1.8): #1.8
+    z=numpy.arange(N)/(1.*(N-1))
+    if stretch_factor==0:
+        return z
+    else:
+        return 1 - numpy.tanh(stretch_factor*(1-z))/numpy.tanh(stretch_factor)
+    
+#~ print h
+
+def read_global_mask(Nx,Ny,Nz, filename=None):
+    if filename is None:
+        filename="mask_global_{0}x{1}x{2}".format(Nx, Ny, Nz)
+    
+    mask=numpy.zeros((Nx+2,Ny+2,Nz+2), dtype='int')
+    
+    f=open(filename,'r')
+    for k in range(Nz+2):
+      line=f.readline() # ignored
+      for j in range(Ny+2):
+          line=f.readline()
+          mask[:,j,k]=numpy.array([int(d) for d in line[:-1]]) # ignore newline
+    
+    mask=mask[1:-1,1:-1,1:-1] # ignore edges
+          
+    return mask[:,::-1,:] # reorient
+
+def depth_array(Nx,Ny,Nz, filename=None):
+    mask=read_global_mask(Nx,Ny,Nz, filename)
+    return depth_array_from_mask(mask)
+
+def depth_array_from_mask(mask):
+    Nx,Ny,Nz=mask.shape
+    mask_=numpy.ones((Nx,Ny,Nz+1))
+    mask_[:,:,1:]=mask
+
+    depth=mask_[:,:,:].argmin(axis=2)
+    a=depth>0
+
+    depth[a]=Nz-(depth[a])+1
+    
+    return depth
+
+"""
+OCEAN parameters:
+
+Ocean__Analyze_Jacobian: True
+Ocean__Belos_Solver__FGMRES_explicit_residual_test: False
+Ocean__Belos_Solver__FGMRES_iterations: 500
+Ocean__Belos_Solver__FGMRES_output: 100
+Ocean__Belos_Solver__FGMRES_restarts: 0
+Ocean__Belos_Solver__FGMRES_tolerance: 1e-08
+Ocean__Input_file: ocean_input.h5
+Ocean__Load_mask: True
+Ocean__Load_salinity_flux: False
+Ocean__Load_state: False
+Ocean__Load_temperature_flux: False
+Ocean__Max_mask_fixes: 5
+Ocean__Output_file: ocean_output.h5
+Ocean__Save_column_integral: False
+Ocean__Save_frequency: 0
+Ocean__Save_mask: True
+Ocean__Save_salinity_flux: True
+Ocean__Save_state: True
+Ocean__Save_temperature_flux: True
+Ocean__THCM__Compute_salinity_integral: True
+Ocean__THCM__Coriolis_Force: 1
+Ocean__THCM__Coupled_Salinity: 0
+Ocean__THCM__Coupled_Sea_Ice_Mask: 1
+Ocean__THCM__Coupled_Temperature: 0
+Ocean__THCM__Depth_hdim: 4000.0
+Ocean__THCM__Fix_Pressure_Points: False
+Ocean__THCM__Flat_Bottom: False
+Ocean__THCM__Forcing_Type: 0
+Ocean__THCM__Global_Bound_xmax: 350.0
+Ocean__THCM__Global_Bound_xmin: 286.0
+Ocean__THCM__Global_Bound_ymax: 74.0
+Ocean__THCM__Global_Bound_ymin: 10.0
+Ocean__THCM__Global_Grid_Size_l: 16
+Ocean__THCM__Global_Grid_Size_m: 16
+Ocean__THCM__Global_Grid_Size_n: 16
+Ocean__THCM__Grid_Stretching_qz: 1.0
+Ocean__THCM__Inhomogeneous_Mixing: 0
+Ocean__THCM__Integral_row_coordinate_i: -1
+Ocean__THCM__Integral_row_coordinate_j: -1
+Ocean__THCM__Land_Mask: no_mask_specified
+Ocean__THCM__Levitus_Internal_T_S: False
+Ocean__THCM__Levitus_S: 1
+Ocean__THCM__Levitus_T: 1
+Ocean__THCM__Linear_EOS:_alpha_S: 0.00076
+Ocean__THCM__Linear_EOS:_alpha_T: 0.0001
+Ocean__THCM__Local_SRES_Only: False
+Ocean__THCM__Mixing: 1
+Ocean__THCM__Periodic: False
+Ocean__THCM__Problem_Description: Unnamed
+Ocean__THCM__Read_Land_Mask: False
+Ocean__THCM__Read_Salinity_Perturbation_Mask: False
+Ocean__THCM__Restoring_Salinity_Profile: 1
+Ocean__THCM__Restoring_Temperature_Profile: 1
+Ocean__THCM__Rho_Mixing: True
+Ocean__THCM__Salinity_Forcing_Data: levitus/new/s00an1
+Ocean__THCM__Salinity_Integral_Sign: -1
+Ocean__THCM__Salinity_Perturbation_Mask: no_mask_specified
+Ocean__THCM__Scaling: THCM
+Ocean__THCM__Taper: 1
+Ocean__THCM__Temperature_Forcing_Data: levitus/new/t00an1
+Ocean__THCM__Topography: 1
+Ocean__THCM__Wind_Forcing_Data: wind/trtau.dat
+Ocean__THCM__Wind_Forcing_Type: 2
+Ocean__Use_legacy_fort.3_output: False
+Ocean__Use_legacy_fort.44_output: True
+
+starting (derived parameters, defaults):
+Ocean__THCM__Starting_Parameters__ALPC: 1.0
+Ocean__THCM__Starting_Parameters__AL_T: 0.133844130562
+Ocean__THCM__Starting_Parameters__ARCL: 0.0
+Ocean__THCM__Starting_Parameters__CMPR: 0.0
+Ocean__THCM__Starting_Parameters__CONT: 0.0
+Ocean__THCM__Starting_Parameters__Combined_Forcing: 0.0
+Ocean__THCM__Starting_Parameters__Energy: 100.0
+Ocean__THCM__Starting_Parameters__Flux_Perturbation: 0.0
+Ocean__THCM__Starting_Parameters__Horizontal_Ekman_Number: 4.22458923802e-05
+Ocean__THCM__Starting_Parameters__Horizontal_Peclet_Number: 0.00156985871272
+Ocean__THCM__Starting_Parameters__IFRICB: 0.0
+Ocean__THCM__Starting_Parameters__LAMB: 7.6
+Ocean__THCM__Starting_Parameters__MIXP: 0.0
+Ocean__THCM__Starting_Parameters__MKAP: 0.0
+Ocean__THCM__Starting_Parameters__NLES: 0.0
+Ocean__THCM__Starting_Parameters__Nonlinear_Factor: 9.83024691358
+Ocean__THCM__Starting_Parameters__P_VC: 6.37
+Ocean__THCM__Starting_Parameters__RESC: 0.0
+Ocean__THCM__Starting_Parameters__Rayleigh_Number: 0.0527448415545
+Ocean__THCM__Starting_Parameters__Rossby_Number: 0.000107642533785
+Ocean__THCM__Starting_Parameters__SPL1: 2000.0
+Ocean__THCM__Starting_Parameters__SPL2: 0.01
+Ocean__THCM__Starting_Parameters__Salinity_Forcing: 1.0
+Ocean__THCM__Starting_Parameters__Salinity_Homotopy: 0.0
+Ocean__THCM__Starting_Parameters__Salinity_Perturbation: 0.0
+Ocean__THCM__Starting_Parameters__Solar_Forcing: 0.0
+Ocean__THCM__Starting_Parameters__Temperature_Forcing: 10.0
+Ocean__THCM__Starting_Parameters__Vertical_Ekman_Number: 2.74273176083e-07
+Ocean__THCM__Starting_Parameters__Vertical_Peclet_Number: 0.0002548
+Ocean__THCM__Starting_Parameters__Wind_Forcing: 1.0
+"""
+
+def initialize_global_iemic(number_of_workers=1):
+
+    print(f"initializing IEMIC with {number_of_workers} workers")  
+      
+    i = iemic(number_of_workers=number_of_workers)#redirection="none", debugger="gdb", channel_type="sockets")
+
+    i.parameters.Ocean__Belos_Solver__FGMRES_tolerance=1e-03
+    i.parameters.Ocean__Belos_Solver__FGMRES_iterations=800
+
+    i.parameters.Ocean__Save_state=False
+    
+    i.parameters.Ocean__THCM__Global_Bound_xmin=0
+    i.parameters.Ocean__THCM__Global_Bound_xmax=360
+    i.parameters.Ocean__THCM__Global_Bound_ymin=-85.5
+    i.parameters.Ocean__THCM__Global_Bound_ymax=85.5
+    
+    i.parameters.Ocean__THCM__Periodic=True
+    i.parameters.Ocean__THCM__Global_Grid_Size_n=96
+    i.parameters.Ocean__THCM__Global_Grid_Size_m=38 
+    i.parameters.Ocean__THCM__Global_Grid_Size_l=12
+    
+    i.parameters.Ocean__THCM__Grid_Stretching_qz=2.25
+    i.parameters.Ocean__THCM__Depth_hdim=5000.
+
+    i.parameters.Ocean__THCM__Topography=0
+    i.parameters.Ocean__THCM__Flat_Bottom=False
+  
+    i.parameters.Ocean__THCM__Read_Land_Mask=True
+    i.parameters.Ocean__THCM__Land_Mask="global_96x38x12.mask"
+    
+    i.parameters.Ocean__THCM__Rho_Mixing=False
+    
+    i.parameters.Ocean__THCM__Starting_Parameters__Combined_Forcing=0.
+    i.parameters.Ocean__THCM__Starting_Parameters__Salinity_Forcing=1.
+    i.parameters.Ocean__THCM__Starting_Parameters__Solar_Forcing=0.
+    i.parameters.Ocean__THCM__Starting_Parameters__Temperature_Forcing=10.
+    i.parameters.Ocean__THCM__Starting_Parameters__Wind_Forcing=1.
+              
+    i.parameters.Ocean__Analyze_Jacobian=True
+
+    return i
+
+def get_mask(i):
+    return i.grid.mask
+
+def get_surface_forcings(i):
+
+    # these are hardcoded in iemic!
+    t0=15. | units.Celsius
+    s0=35. | units.psu
+    tau0 = 0.1 | units.Pa 
+    
+    # amplitudes
+    t_a=i.parameters.Ocean__THCM__Starting_Parameters__Temperature_Forcing | units.Celsius
+    s_a=i.parameters.Ocean__THCM__Starting_Parameters__Salinity_Forcing | units.psu
+
+    def attributes(lon,lat,tatm,emip,tau_x,tau_y):
+      return (lon,lat, t0+t_a*tatm, s0+s_a*emip, tau0*tau_x, tau0*tau_y) 
+
+    forcings=i.surface_forcing.empty_copy()
+    channel=i.surface_forcing.new_channel_to(forcings)
+    channel.transform(["lon","lat","tatm","emip","tau_x","tau_y"], 
+                       attributes, 
+                       ["lon","lat","tatm","emip","tau_x","tau_y"])
+    return forcings
+
