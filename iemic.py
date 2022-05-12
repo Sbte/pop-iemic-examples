@@ -21,6 +21,18 @@ import numpy
 # some utility functions
 # note that i-emic defines depth levels as negative numbers!
 
+def z_from_cellcenterz(zc, firstlevel=None):
+    if firstlevel is None:
+      top=0*zc[0]
+    z=numpy.zeros(len(zc)+1)*zc[0]
+    direction=1
+    if zc[0]<=zc[0]*0:
+      direction=-1
+    for i,_zc in enumerate(zc[::direction]):
+      half=_zc-z[i]
+      z[i+1]=z[i]+2*half
+    return z[::direction]
+
 def depth_levels(N, stretch_factor=1.8): #1.8
     z=numpy.arange(N)/(1.*(N-1))
     if stretch_factor==0:
@@ -255,12 +267,12 @@ def get_grid_with_units(grid):
     def add_units(mask, xvel, yvel, zvel, pressure, salt, temp):
         # salt and temp need to account for mask
         _salt=s0*(mask==0)+s_scale*salt
-        _temp=t0*(mask==0)+tscale*temp
+        _temp=t0*(mask==0)+t_scale*temp
         return uscale*xvel, uscale*yvel, uscale*zvel, pscale*pressure, _salt, _temp 
 
     channel.transform(["u_velocity", "v_velocity", "w_velocity", "pressure", "salinity", "temperature"], 
                        add_units,
-                       ["u_velocity", "v_velocity", "w_velocity", "pressure", "salinity", "temperature"])
+                       ["mask", "u_velocity", "v_velocity", "w_velocity", "pressure", "salinity", "temperature"])
 
     return result
 
@@ -272,7 +284,14 @@ def get_surface_grid(grid):
     channel=surface.new_channel_to(result)
     
     channel.copy_attributes(["mask", "lon", "lat"])
-    
+
+    z=grid[0,0,:].z
+
+    z_=z_from_cellcenterz(z)
+    dz=z_[1:]-z_[:-1]
+
+    print(dz)
+
     def average_vel(v, dz):
       return (v*dz).sum(axis=-1)
     
@@ -283,7 +302,7 @@ def get_surface_grid(grid):
     rho0=1.024e+03 | units.kg/units.m**3
     g=9.8 | units.m/units.s**2
   
-    result.ssh=surface.pressure/(rh0*g)
+    result.ssh=surface.pressure/(rho0*g)
 
     return result
 
