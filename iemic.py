@@ -290,8 +290,6 @@ def get_surface_grid(grid):
     z_=z_from_cellcenterz(z)
     dz=z_[1:]-z_[:-1]
 
-    print(dz)
-
     def average_vel(v, dz):
       return (v*dz).sum(axis=-1)
     
