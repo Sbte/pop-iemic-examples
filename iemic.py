@@ -169,7 +169,7 @@ def initialize_global_iemic(number_of_workers=1, redirection="null"):
 
     print(f"initializing IEMIC with {number_of_workers} workers")  
       
-    i = iemic(number_of_workers=number_of_workers,redirection=redirection)#, debugger="gdb", channel_type="sockets")
+    i = iemic(number_of_workers=number_of_workers,redirection=redirection, channel_type="sockets")
 
     i.parameters.Ocean__Belos_Solver__FGMRES_tolerance=1e-03
     i.parameters.Ocean__Belos_Solver__FGMRES_iterations=800
@@ -230,4 +230,60 @@ def get_surface_forcings(i):
                        attributes, 
                        ["lon","lat","tatm","emip","tau_x","tau_y"])
     return forcings
+
+# convenience function to get grid with physical units
+# this should really be available on the iemic interface
+def get_grid_with_units(grid):
+    result=grid.empty_copy()
+
+    channel=grid.new_channel_to(result)
+    
+    channel.copy_attributes(["mask", "lon", "lat","z"])
+
+    # hardcoded constants in I-EMIC
+    rho0=1.024e+03 | units.kg/units.m**3
+    r0=6.37e+06 | units.m
+    omega0=7.292e-05 | units.s**-1
+    uscale=0.1 | units.m/units.s
+    t0=15. | units.Celsius
+    s0=35. | units.psu
+    pscale=2*omega0*r0*uscale*rho0
+    s_scale=1. | units.psu
+    t_scale=1| units.Celsius
+    
+    # note pressure is pressure anomaly (ie difference from hydrostatic)
+    def add_units(mask, xvel, yvel, zvel, pressure, salt, temp):
+        # salt and temp need to account for mask
+        _salt=s0*(mask==0)+s_scale*salt
+        _temp=t0*(mask==0)+tscale*temp
+        return uscale*xvel, uscale*yvel, uscale*zvel, pscale*pressure, _salt, _temp 
+
+    channel.transform(["u_velocity", "v_velocity", "w_velocity", "pressure", "salinity", "temperature"], 
+                       add_units,
+                       ["u_velocity", "v_velocity", "w_velocity", "pressure", "salinity", "temperature"])
+
+    return result
+
+# get surface grid with mask, lon, lat, ssh, uvel_barotropic, vvel_barotropic
+def get_surface_grid(grid):
+    surface=grid[:,:,-1] # note surface is -1
+    result=surface.empty_copy()
+    
+    channel=surface.new_channel_to(result)
+    
+    channel.copy_attributes(["mask", "lon", "lat"])
+    
+    def average_vel(v, dz):
+      return (v*dz).sum(axis=-1)
+    
+    result.uvel_barotropic=average_vel(grid.u_velocity,dz)
+    result.vvel_barotropic=average_vel(grid.v_velocity,dz)
+
+    # values hardcoded in IEMIC
+    rho0=1.024e+03 | units.kg/units.m**3
+    g=9.8 | units.m/units.s**2
+  
+    result.ssh=surface.pressure/(rh0*g)
+
+    return result
 
