@@ -222,7 +222,7 @@ def initialize_global_iemic(number_of_workers=1, redirection="null"):
 def get_mask(i):
     return i.grid.mask
 
-def get_surface_forcings(i):
+def get_surface_forcings(i, forcings_file="forcings.amuse"):
 
     # these are hardcoded in iemic!
     t0=15. | units.Celsius
@@ -241,6 +241,9 @@ def get_surface_forcings(i):
     channel.transform(["lon","lat","tatm","emip","tau_x","tau_y"], 
                        attributes, 
                        ["lon","lat","tatm","emip","tau_x","tau_y"])
+
+    write_set_to_file(forcings, forcings_file ,"amuse", overwrite_file=True)
+    
     return forcings
 
 # convenience function to get grid with physical units
@@ -304,3 +307,43 @@ def get_surface_grid(grid):
 
     return result
 
+def get_equilibrium_state(instance, iemic_state_file="iemic_state.amuse"):
+    print("starting equilibrium state by continuation of combined forcing from zero")
+
+    # the following line optionally redirects iemic output to file
+    #~ instance.set_output_file("output.%p")
+
+    print("state1:", instance.get_name_of_current_state())
+
+    print("all parameters (initial)")
+    print(instance.parameters)
+    
+    x = instance.get_state()
+
+    print("THCM parameters (after init)")
+    print(instance.Ocean__THCM__Starting_Parameters)
+    
+    # numerical parameters for the continuation
+    parameters={"Newton Tolerance" : 1.e-2, "Verbose" : True,
+                "Minimum Step Size" : 0.001,
+                "Maximum Step Size" : 0.2,
+                "Delta" : 1.e-6 }
+
+    # setup continuation object
+    continuation=Continuation(instance, parameters)
+    
+    # Converge to an initial steady state
+    x = continuation.newton(x, 1e-10)
+      
+    print("start continuation, this may take a while")
+
+    print("state:", instance.get_name_of_current_state())
+
+    x, mu, data = continuation.continuation(x, 'Ocean->THCM->Starting Parameters->Combined Forcing', 0., 1., 0.005)
+
+    print("continuation done")
+
+    print(f"writing grid to {iemic_state_file}")
+    write_set_to_file(x.grid, iemic_state_file,"amuse", overwrite_file=True)
+    
+    return x.grid.copy()
