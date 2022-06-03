@@ -62,7 +62,7 @@ def initialize_pop(depth_levels, depth_array, mode='96x120x12', number_of_worker
   cwd=os.getcwd()
 
   dz=depth_levels[1:]-depth_levels[:-1]
-  print(f"dz: {dz}")
+  #~ print(f"dz: {dz}")
 
   p.parameters.topography_option='amuse' 
   p.parameters.depth_index=depth_array
@@ -76,25 +76,25 @@ def initialize_pop(depth_levels, depth_array, mode='96x120x12', number_of_worker
   p.parameters.surface_heat_flux_forcing='amuse'
   p.parameters.surface_freshwater_flux_forcing='amuse'
   
-  print(p.nodes[0,0].lon.in_(units.deg))
-  print(p.nodes[0,0].lat.in_(units.deg))
-  print(p.nodes[-1,-1].lon.in_(units.deg))
-  print(p.nodes[-1,-1].lat.in_(units.deg))
-  print()
-  print(p.nodes[0,:].lat.in_(units.deg))
+  #~ print(p.nodes[0,0].lon.in_(units.deg))
+  #~ print(p.nodes[0,0].lat.in_(units.deg))
+  #~ print(p.nodes[-1,-1].lon.in_(units.deg))
+  #~ print(p.nodes[-1,-1].lat.in_(units.deg))
+  #~ print()
+  #~ print(p.nodes[0,:].lat.in_(units.deg))
 
 
-  print()
-  print(p.elements[0,0].lon.in_(units.deg))
-  print(p.elements[0,0].lat.in_(units.deg))
-  print(p.elements[-1,-1].lon.in_(units.deg))
-  print(p.elements[-1,-1].lat.in_(units.deg))
-  print()
-  print(p.elements[0,:].lat.in_(units.deg))
+  #~ print()
+  #~ print(p.elements[0,0].lon.in_(units.deg))
+  #~ print(p.elements[0,0].lat.in_(units.deg))
+  #~ print(p.elements[-1,-1].lon.in_(units.deg))
+  #~ print(p.elements[-1,-1].lat.in_(units.deg))
+  #~ print()
+  #~ print(p.elements[0,:].lat.in_(units.deg))
 
-  print()
-  print((p.nodes[1,1].position-p.nodes[0,0].position).in_(units.deg))
-  print((p.elements[1,1:].position-p.elements[0,:-1].position).in_(units.deg))
+  #~ print()
+  #~ print((p.nodes[1,1].position-p.nodes[0,0].position).in_(units.deg))
+  #~ print((p.elements[1,1:].position-p.elements[0,:-1].position).in_(units.deg))
 
   return p
 
@@ -152,13 +152,18 @@ def reset_pop_state(p,label, snapdir="snapshots"):
     elements3d=read_set_from_file(os.path.join(snapdir, label+"_elements3d.amuse"),"amuse")
 
     channel1=nodes.new_channel_to(p.nodes)
-    channel1.copy_attributes(["gradx","grady","ssh", "vx_barotropic", "vy_barotropic"])
+    #~ channel1.copy_attributes(["gradx","grady", "vx_barotropic", "vy_barotropic"])
+    channel1.copy_attributes(["vx_barotropic", "vy_barotropic"])
 
     channel2=nodes3d.new_channel_to(p.nodes3d)
     channel2.copy_attributes(["xvel","yvel"])
 
     channel3=elements3d.new_channel_to(p.elements3d)
-    channel3.copy_attributes(["rho", "salinity", "temperature"])
+    #~ channel3.copy_attributes(["rho", "salinity", "temperature"])
+    channel3.copy_attributes(["salinity", "temperature"])
+
+    channel1=elements.new_channel_to(p.elements)
+    channel1.copy_attributes(["ssh"])
 
 def long_evolve(p,tend=100. | units.yr, dt=100. | units.day, dt2=1. | units.day, i0=0, snapdir="snapshots"):
     
