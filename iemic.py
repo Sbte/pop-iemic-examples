@@ -265,7 +265,7 @@ def get_grid_with_units(grid):
     pscale=2*omega0*r0*uscale*rho0
     s_scale=1. | units.psu
     t_scale=1| units.Celsius
-    
+        
     # note pressure is pressure anomaly (ie difference from hydrostatic)
     def add_units(mask, xvel, yvel, zvel, pressure, salt, temp):
         # salt and temp need to account for mask
@@ -294,7 +294,7 @@ def get_surface_grid(grid):
     dz=z_[1:]-z_[:-1]
 
     def average_vel(v, dz):
-      return (v*dz).sum(axis=-1)
+      return (v*dz).sum(axis=-1)/dz.sum()
     
     result.uvel_barotropic=average_vel(grid.u_velocity,dz)
     result.vvel_barotropic=average_vel(grid.v_velocity,dz)
@@ -302,7 +302,7 @@ def get_surface_grid(grid):
     # values hardcoded in IEMIC
     rho0=1.024e+03 | units.kg/units.m**3
     g=9.8 | units.m/units.s**2
-  
+    
     result.ssh=surface.pressure/(rho0*g)
 
     return result

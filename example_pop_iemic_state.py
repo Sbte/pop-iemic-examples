@@ -17,17 +17,20 @@ from amuse.datamodel import new_regular_grid
 from functools import partial
 
 bilinear_2D_remapper=partial(bilinear_2D_remapper, check_inside=False)
-bilinear_2D_remapper_3D=partial(bilinear_2D_remapper, check_inside=False, do_3d_slices=True)
+bilinear_2D_remapper_3D=partial(bilinear_2D_remapper, check_inside=False, do_slices=True)
 nearest_2D_remapper=partial(nearest_2D_remapper, check_inside=False)
 
 def simple_upscale(x, fx, fy):
   # scale 2d x with integer factors
   return numpy.kron(x, numpy.ones((fx,fy)))
 
-def reset_pop_state_from_iemic_state(p, grid, upscale=(1,1)):
+def reset_pop_state_from_iemic_state(pop, surface_state, iemic_state):
 
-    surface_state=get_surface_grid(grid)
-    iemic_state=get_grid_with_units(grid)
+    # quick fix
+    state=iemic_state[:,:,::-1].copy()
+    state.z=-state.z
+    state.collection_attributes.axes_names=["lon", "lat","z"]
+
 
     # note formally there is an offset between node and element vars on the iemic grid too
     # this not accounted for: solve by making a copy and offsetting lat and lon
@@ -36,12 +39,12 @@ def reset_pop_state_from_iemic_state(p, grid, upscale=(1,1)):
     channel1.copy_attributes(["ssh"], target_names=["ssh"])
 
     channel2=surface_state.new_remapping_channel_to(pop.nodes,  bilinear_2D_remapper)
-    channel2.copy_attributes(["uvel_barotropic", "vvel_barotropic"], target_names=[["vx_barotropic", "vy_barotropic"]])
+    channel2.copy_attributes(["uvel_barotropic", "vvel_barotropic"], target_names=["vx_barotropic", "vy_barotropic"])
     
-    channel3=iemic_state.new_remapping_channel_to(pop.nodes3d,  bilinear_2D_remapper_3D)
+    channel3=state.new_remapping_channel_to(pop.nodes3d,  bilinear_2D_remapper_3D)
     channel3.copy_attributes(["u_velocity", "v_velocity"], target_names=["xvel","yvel"])
 
-    channel4=iemic_state.new_remapping_channel_to(pop.elements3d,  bilinear_2D_remapper_3D)
+    channel4=state.new_remapping_channel_to(pop.elements3d,  bilinear_2D_remapper_3D)
     channel4.copy_attributes(["salinity", "temperature"])
 
 
@@ -79,11 +82,14 @@ def initialize_pop_with_iemic_setup(pop_number_of_workers=8):
 
     iemic.stop()
 
-    # temporary fix for issue #856
-    surface_forcings.collection_attributes.axes_names=["lon", "lat"]
-
-    surface_state=get_surface_grid(iemic_grid)
     iemic_state=get_grid_with_units(iemic_grid)
+    surface_state=get_surface_grid(iemic_state)
+
+
+    # temporary fixes for AMUSE issue #856
+    surface_forcings.collection_attributes.axes_names=["lon", "lat"]
+    surface_state.collection_attributes.axes_names=["lon", "lat"]
+    iemic_state.collection_attributes.axes_names=["lon", "lat","z"]
 
     mask=iemic_grid.mask
 
@@ -97,10 +103,9 @@ def initialize_pop_with_iemic_setup(pop_number_of_workers=8):
 
     pop=initialize_pop( levels, depth, mode="96x120x12", number_of_workers=pop_number_of_workers)#, latmin=latmin, latmax=latmax)
 
-    p.parameters.reinit_gradp=True
-    p.parameters.reinit_rho=True
+    pop.parameters.reinit_gradp=True
+    pop.parameters.reinit_rho=True
 
-      
     channel=surface_forcings.new_remapping_channel_to(pop.forcings,  bilinear_2D_remapper)
     channel.copy_attributes(["tau_x", "tau_y"])
 
@@ -109,7 +114,7 @@ def initialize_pop_with_iemic_setup(pop_number_of_workers=8):
 
     plot_forcings_and_depth(pop)
     
-    reset_pop_state_from_iemic_state(pop, iemic_grid, upscale=(1,3))
+    reset_pop_state_from_iemic_state(pop, surface_state, iemic_state)
     
     return pop
 
