@@ -31,7 +31,7 @@
   fit_freq          = 1
   time_mix_freq     = 17
   dt_option         = 'steps_per_day'
-  dt_count          = 20
+  dt_count          = 200
   impcor            = .true.
   laccel            = .false.
   accel_file        = 'depth_accel'
@@ -146,11 +146,11 @@
 /
 
 &vertical_mix_nml
-   vmix_choice = 'kpp'
+   vmix_choice = 'const'
    aidif       = 1.0
    bottom_drag = 1.0e-3
-   implicit_vertical_mix = .true.
-   convection_type = 'diffusion'
+   implicit_vertical_mix = .false.
+   convection_type = 'adjustment'
    nconvad = 2
    convect_diff = 1000.0
    convect_visc = 1000.0
@@ -159,8 +159,8 @@
 /
 
 &vmix_const_nml
-   const_vvc   = 0.25
-   const_vdc   = 0.25
+   const_vvc   = 10.
+   const_vdc   = 1.
 /
 
 &vmix_rich_nml
@@ -195,13 +195,13 @@
 &hmix_del2u_nml
    lauto_hmix           = .false. 
    lvariable_hmix       = .false. 
-   am                   =1.6e8
+   am                   = 2.5e9
 /
 
 &hmix_del2t_nml
    lauto_hmix           = .false. 
    lvariable_hmix       = .false. 
-   ah                   = 1.6e8
+   ah                   = 1.e7
 /
 
 &hmix_del4u_nml
