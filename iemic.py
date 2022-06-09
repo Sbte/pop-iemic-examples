@@ -269,8 +269,10 @@ def get_grid_with_units(grid):
     # note pressure is pressure anomaly (ie difference from hydrostatic)
     def add_units(mask, xvel, yvel, zvel, pressure, salt, temp):
         # salt and temp need to account for mask
-        _salt=s0*(mask==0)+s_scale*salt
-        _temp=t0*(mask==0)+t_scale*temp
+        #~ _salt=s0*(mask==0)+s_scale*salt
+        #~ _temp=t0*(mask==0)+t_scale*temp
+        _salt=s0+s_scale*salt
+        _temp=t0+t_scale*temp
         return uscale*xvel, uscale*yvel, uscale*zvel, pscale*pressure, _salt, _temp 
 
     channel.transform(["u_velocity", "v_velocity", "w_velocity", "pressure", "salinity", "temperature"], 
