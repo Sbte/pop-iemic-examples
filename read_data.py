@@ -201,9 +201,10 @@ def six_panel(x):
 
     Sslice=x[atlantic_ilon,:,:].salinity + 35
 
+    Sslice=numpy.maximum(Sslice,34)
+
     vmax=Sslice.max()
     vmin=Sslice.min()
-    print(vmax, vmin)
 
     val=Sslice
 
@@ -226,8 +227,15 @@ def six_panel(x):
 
     Ssurf=x[:,:,-1].salinity + 35
 
+    Ssurf=numpy.maximum(Ssurf,34)
+
+
     vmax=Ssurf.max()
     vmin=Ssurf.min()
+    print("vmin, vamx:", vmin,vmax)
+    vmax=36
+    vmin=34
+
 
     val=Ssurf
     val=numpy.ma.array(val, mask=surfacemask==1)
@@ -266,10 +274,10 @@ def import_to_iemic_grid(label, directory="."):
     x=nodes3d.empty_copy()
     x.mask=mask[:,:,::-1]
     a=x.mask==0
-    
+            
     x.salinity=elements3d[:,:,::-1].salinity.value_in(units.psu)
     x[a].salinity=(x[a].salinity-35)
-    x.temperature=elements3d[:,:,::-1].temperature.value_in(units.C)-15
+    x.temperature=elements3d[:,:,::-1].temperature.value_in(units.Celsius)-15
     x.u_velocity=nodes3d[:,:,::-1].xvel.value_in(0.1*units.m/units.s)
     x.v_velocity=nodes3d[:,:,::-1].yvel.value_in(0.1*units.m/units.s)
     x.lat=nodes3d[:,:,::-1].lat
@@ -282,7 +290,9 @@ def import_to_iemic_grid(label, directory="."):
 if __name__=="__main__":
     n=10
     label="state_"+f"{n:06d}"
+    #~ label=f"{n}"
     directory="snapshots"
+    #~ directory="./"
     x=import_to_iemic_grid(label,directory)
     
     six_panel(x)
