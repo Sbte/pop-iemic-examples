@@ -177,7 +177,7 @@ Ocean__THCM__Starting_Parameters__Vertical_Peclet_Number: 0.0002548
 Ocean__THCM__Starting_Parameters__Wind_Forcing: 1.0
 """
 
-def initialize_global_iemic(number_of_workers=1, redirection="null"):
+def initialize_global_iemic(number_of_workers=1, redirection="none"):
 
     print(f"initializing IEMIC with {number_of_workers} workers")  
       
@@ -335,13 +335,13 @@ def get_equilibrium_state(instance, iemic_state_file="iemic_state.amuse"):
     continuation=Continuation(instance, parameters)
     
     # Converge to an initial steady state
-    x = continuation.newton(x, 1e-10)
+    x = continuation.newton(x)
       
     print("start continuation, this may take a while")
 
     print("state:", instance.get_name_of_current_state())
 
-    x, mu, data = continuation.continuation(x, 'Ocean->THCM->Starting Parameters->Combined Forcing', 0., 1., 0.005)
+    x, mu = continuation.continuation(x, 'Ocean->THCM->Starting Parameters->Combined Forcing', 0., 1., 0.005)
 
     print("continuation done")
 
