@@ -21,59 +21,68 @@ import numpy
 # some utility functions
 # note that i-emic defines depth levels as negative numbers!
 
+
 def z_from_cellcenterz(zc, firstlevel=None):
     if firstlevel is None:
-      top=0*zc[0]
-    z=numpy.zeros(len(zc)+1)*zc[0]
-    direction=1
-    if zc[0]<=zc[0]*0:
-      direction=-1
-    for i,_zc in enumerate(zc[::direction]):
-      half=_zc-z[i]
-      z[i+1]=z[i]+2*half
+        top = 0 * zc[0]
+    z = numpy.zeros(len(zc) + 1) * zc[0]
+    direction = 1
+    if zc[0] <= zc[0] * 0:
+        direction = -1
+    for i, _zc in enumerate(zc[::direction]):
+        half = _zc - z[i]
+        z[i + 1] = z[i] + 2 * half
     return z[::direction]
 
-def depth_levels(N, stretch_factor=1.8): #1.8
-    z=numpy.arange(N)/(1.*(N-1))
-    if stretch_factor==0:
+
+def depth_levels(N, stretch_factor=1.8):  #1.8
+    z = numpy.arange(N) / (1. * (N - 1))
+    if stretch_factor == 0:
         return z
     else:
-        return 1 - numpy.tanh(stretch_factor*(1-z))/numpy.tanh(stretch_factor)
-    
+        return 1 - numpy.tanh(stretch_factor *
+                              (1 - z)) / numpy.tanh(stretch_factor)
+
+
 #~ print h
 
-def read_global_mask(Nx,Ny,Nz, filename=None):
-    if filename is None:
-        filename="mask_global_{0}x{1}x{2}".format(Nx, Ny, Nz)
-    
-    mask=numpy.zeros((Nx+2,Ny+2,Nz+2), dtype='int')
-    
-    f=open(filename,'r')
-    for k in range(Nz+2):
-      line=f.readline() # ignored
-      for j in range(Ny+2):
-          line=f.readline()
-          mask[:,j,k]=numpy.array([int(d) for d in line[:-1]]) # ignore newline
-    
-    mask=mask[1:-1,1:-1,1:-1] # ignore edges
-          
-    return mask[:,::-1,:] # reorient
 
-def depth_array(Nx,Ny,Nz, filename=None):
-    mask=read_global_mask(Nx,Ny,Nz, filename)
+def read_global_mask(Nx, Ny, Nz, filename=None):
+    if filename is None:
+        filename = "mask_global_{0}x{1}x{2}".format(Nx, Ny, Nz)
+
+    mask = numpy.zeros((Nx + 2, Ny + 2, Nz + 2), dtype='int')
+
+    f = open(filename, 'r')
+    for k in range(Nz + 2):
+        line = f.readline()  # ignored
+        for j in range(Ny + 2):
+            line = f.readline()
+            mask[:, j, k] = numpy.array([int(d)
+                                         for d in line[:-1]])  # ignore newline
+
+    mask = mask[1:-1, 1:-1, 1:-1]  # ignore edges
+
+    return mask[:, ::-1, :]  # reorient
+
+
+def depth_array(Nx, Ny, Nz, filename=None):
+    mask = read_global_mask(Nx, Ny, Nz, filename)
     return depth_array_from_mask(mask)
 
+
 def depth_array_from_mask(mask):
-    Nx,Ny,Nz=mask.shape
-    mask_=numpy.ones((Nx,Ny,Nz+1))
-    mask_[:,:,1:]=mask
+    Nx, Ny, Nz = mask.shape
+    mask_ = numpy.ones((Nx, Ny, Nz + 1))
+    mask_[:, :, 1:] = mask
 
-    depth=mask_[:,:,:].argmin(axis=2)
-    a=depth>0
+    depth = mask_[:, :, :].argmin(axis=2)
+    a = depth > 0
 
-    depth[a]=Nz-(depth[a])+1
-    
+    depth[a] = Nz - (depth[a]) + 1
+
     return depth
+
 
 """
 OCEAN parameters:
@@ -177,140 +186,155 @@ Ocean__THCM__Starting_Parameters__Vertical_Peclet_Number: 0.0002548
 Ocean__THCM__Starting_Parameters__Wind_Forcing: 1.0
 """
 
+
 def initialize_global_iemic(number_of_workers=1, redirection="none"):
 
-    print(f"initializing IEMIC with {number_of_workers} workers")  
-      
-    i = iemic(number_of_workers=number_of_workers,redirection=redirection, channel_type="sockets")
+    print(f"initializing IEMIC with {number_of_workers} workers")
 
-    i.parameters.Ocean__Belos_Solver__FGMRES_tolerance=1e-03
-    i.parameters.Ocean__Belos_Solver__FGMRES_iterations=800
+    i = iemic(number_of_workers=number_of_workers,
+              redirection=redirection,
+              channel_type="sockets")
 
-    i.parameters.Ocean__Save_state=False
-    
-    i.parameters.Ocean__THCM__Global_Bound_xmin=0
-    i.parameters.Ocean__THCM__Global_Bound_xmax=360
-    i.parameters.Ocean__THCM__Global_Bound_ymin=-85.5
-    i.parameters.Ocean__THCM__Global_Bound_ymax=85.5
-    
-    i.parameters.Ocean__THCM__Periodic=True
-    i.parameters.Ocean__THCM__Global_Grid_Size_n=96
-    i.parameters.Ocean__THCM__Global_Grid_Size_m=38 
-    i.parameters.Ocean__THCM__Global_Grid_Size_l=12
-    
-    i.parameters.Ocean__THCM__Grid_Stretching_qz=2.25
-    i.parameters.Ocean__THCM__Depth_hdim=5000.
+    i.parameters.Ocean__Belos_Solver__FGMRES_tolerance = 1e-03
+    i.parameters.Ocean__Belos_Solver__FGMRES_iterations = 800
 
-    i.parameters.Ocean__THCM__Topography=0
-    i.parameters.Ocean__THCM__Flat_Bottom=False
-  
-    i.parameters.Ocean__THCM__Read_Land_Mask=True
-    i.parameters.Ocean__THCM__Land_Mask="global_96x38x12.mask"
-    
-    i.parameters.Ocean__THCM__Rho_Mixing=False
-    
-    i.parameters.Ocean__THCM__Starting_Parameters__Combined_Forcing=0.
-    i.parameters.Ocean__THCM__Starting_Parameters__Salinity_Forcing=1.
-    i.parameters.Ocean__THCM__Starting_Parameters__Solar_Forcing=0.
-    i.parameters.Ocean__THCM__Starting_Parameters__Temperature_Forcing=10.
-    i.parameters.Ocean__THCM__Starting_Parameters__Wind_Forcing=1.
-              
-    i.parameters.Ocean__Analyze_Jacobian=True
+    i.parameters.Ocean__Save_state = False
+
+    i.parameters.Ocean__THCM__Global_Bound_xmin = 0
+    i.parameters.Ocean__THCM__Global_Bound_xmax = 360
+    i.parameters.Ocean__THCM__Global_Bound_ymin = -85.5
+    i.parameters.Ocean__THCM__Global_Bound_ymax = 85.5
+
+    i.parameters.Ocean__THCM__Periodic = True
+    i.parameters.Ocean__THCM__Global_Grid_Size_n = 96
+    i.parameters.Ocean__THCM__Global_Grid_Size_m = 38
+    i.parameters.Ocean__THCM__Global_Grid_Size_l = 12
+
+    i.parameters.Ocean__THCM__Grid_Stretching_qz = 2.25
+    i.parameters.Ocean__THCM__Depth_hdim = 5000.
+
+    i.parameters.Ocean__THCM__Topography = 0
+    i.parameters.Ocean__THCM__Flat_Bottom = False
+
+    i.parameters.Ocean__THCM__Read_Land_Mask = True
+    i.parameters.Ocean__THCM__Land_Mask = "global_96x38x12.mask"
+
+    i.parameters.Ocean__THCM__Rho_Mixing = False
+
+    i.parameters.Ocean__THCM__Starting_Parameters__Combined_Forcing = 0.
+    i.parameters.Ocean__THCM__Starting_Parameters__Salinity_Forcing = 1.
+    i.parameters.Ocean__THCM__Starting_Parameters__Solar_Forcing = 0.
+    i.parameters.Ocean__THCM__Starting_Parameters__Temperature_Forcing = 10.
+    i.parameters.Ocean__THCM__Starting_Parameters__Wind_Forcing = 1.
+
+    i.parameters.Ocean__Analyze_Jacobian = True
 
     return i
+
 
 def get_mask(i):
     return i.grid.mask
 
+
 def get_surface_forcings(i, forcings_file="forcings.amuse"):
 
     # these are hardcoded in iemic!
-    t0=15. | units.Celsius
-    s0=35. | units.psu
-    tau0 = 0.1 | units.Pa 
-    
+    t0 = 15. | units.Celsius
+    s0 = 35. | units.psu
+    tau0 = 0.1 | units.Pa
+
     # amplitudes
-    t_a=i.parameters.Ocean__THCM__Starting_Parameters__Temperature_Forcing | units.Celsius
-    s_a=i.parameters.Ocean__THCM__Starting_Parameters__Salinity_Forcing | units.psu
+    t_a = i.parameters.Ocean__THCM__Starting_Parameters__Temperature_Forcing | units.Celsius
+    s_a = i.parameters.Ocean__THCM__Starting_Parameters__Salinity_Forcing | units.psu
 
-    def attributes(lon,lat,tatm,emip,tau_x,tau_y):
-      return (lon,lat, t0+t_a*tatm, s0+s_a*emip, tau0*tau_x, tau0*tau_y) 
+    def attributes(lon, lat, tatm, emip, tau_x, tau_y):
+        return (lon, lat, t0 + t_a * tatm, s0 + s_a * emip, tau0 * tau_x,
+                tau0 * tau_y)
 
-    forcings=i.surface_forcing.empty_copy()
-    channel=i.surface_forcing.new_channel_to(forcings)
-    channel.transform(["lon","lat","tatm","emip","tau_x","tau_y"], 
-                       attributes, 
-                       ["lon","lat","tatm","emip","tau_x","tau_y"])
+    forcings = i.surface_forcing.empty_copy()
+    channel = i.surface_forcing.new_channel_to(forcings)
+    channel.transform(["lon", "lat", "tatm", "emip", "tau_x", "tau_y"],
+                      attributes,
+                      ["lon", "lat", "tatm", "emip", "tau_x", "tau_y"])
 
-    write_set_to_file(forcings, forcings_file ,"amuse", overwrite_file=True)
-    
+    write_set_to_file(forcings, forcings_file, "amuse", overwrite_file=True)
+
     return forcings
+
 
 # convenience function to get grid with physical units
 # this should really be available on the iemic interface
 def get_grid_with_units(grid):
-    result=grid.empty_copy()
+    result = grid.empty_copy()
 
-    channel=grid.new_channel_to(result)
-    
-    channel.copy_attributes(["mask", "lon", "lat","z"])
+    channel = grid.new_channel_to(result)
+
+    channel.copy_attributes(["mask", "lon", "lat", "z"])
 
     # hardcoded constants in I-EMIC
-    rho0=1.024e+03 | units.kg/units.m**3
-    r0=6.37e+06 | units.m
-    omega0=7.292e-05 | units.s**-1
-    uscale=0.1 | units.m/units.s
-    t0=15. | units.Celsius
-    s0=35. | units.psu
-    pscale=2*omega0*r0*uscale*rho0
-    s_scale=1. | units.psu
-    t_scale=1| units.Celsius
-        
+    rho0 = 1.024e+03 | units.kg / units.m**3
+    r0 = 6.37e+06 | units.m
+    omega0 = 7.292e-05 | units.s**-1
+    uscale = 0.1 | units.m / units.s
+    t0 = 15. | units.Celsius
+    s0 = 35. | units.psu
+    pscale = 2 * omega0 * r0 * uscale * rho0
+    s_scale = 1. | units.psu
+    t_scale = 1 | units.Celsius
+
     # note pressure is pressure anomaly (ie difference from hydrostatic)
     def add_units(mask, xvel, yvel, zvel, pressure, salt, temp):
         # salt and temp need to account for mask
         #~ _salt=s0*(mask==0)+s_scale*salt
         #~ _temp=t0*(mask==0)+t_scale*temp
-        _salt=s0+s_scale*salt
-        _temp=t0+t_scale*temp
-        return uscale*xvel, uscale*yvel, uscale*zvel, pscale*pressure, _salt, _temp 
+        _salt = s0 + s_scale * salt
+        _temp = t0 + t_scale * temp
+        return uscale * xvel, uscale * yvel, uscale * zvel, pscale * pressure, _salt, _temp
 
-    channel.transform(["u_velocity", "v_velocity", "w_velocity", "pressure", "salinity", "temperature"], 
-                       add_units,
-                       ["mask", "u_velocity", "v_velocity", "w_velocity", "pressure", "salinity", "temperature"])
+    channel.transform([
+        "u_velocity", "v_velocity", "w_velocity", "pressure", "salinity",
+        "temperature"
+    ], add_units, [
+        "mask", "u_velocity", "v_velocity", "w_velocity", "pressure",
+        "salinity", "temperature"
+    ])
 
     return result
+
 
 # get surface grid with mask, lon, lat, ssh, uvel_barotropic, vvel_barotropic
 def get_surface_grid(grid):
-    surface=grid[:,:,-1] # note surface is -1
-    result=surface.empty_copy()
-    
-    channel=surface.new_channel_to(result)
-    
+    surface = grid[:, :, -1]  # note surface is -1
+    result = surface.empty_copy()
+
+    channel = surface.new_channel_to(result)
+
     channel.copy_attributes(["mask", "lon", "lat"])
 
-    z=grid[0,0,:].z
+    z = grid[0, 0, :].z
 
-    z_=z_from_cellcenterz(z)
-    dz=z_[1:]-z_[:-1]
+    z_ = z_from_cellcenterz(z)
+    dz = z_[1:] - z_[:-1]
 
     def average_vel(v, dz):
-      return (v*dz).sum(axis=-1)/dz.sum()
-    
-    result.uvel_barotropic=average_vel(grid.u_velocity,dz)
-    result.vvel_barotropic=average_vel(grid.v_velocity,dz)
+        return (v * dz).sum(axis=-1) / dz.sum()
+
+    result.uvel_barotropic = average_vel(grid.u_velocity, dz)
+    result.vvel_barotropic = average_vel(grid.v_velocity, dz)
 
     # values hardcoded in IEMIC
-    rho0=1.024e+03 | units.kg/units.m**3
-    g=9.8 | units.m/units.s**2
-    
-    result.ssh=surface.pressure/(rho0*g)
+    rho0 = 1.024e+03 | units.kg / units.m**3
+    g = 9.8 | units.m / units.s**2
+
+    result.ssh = surface.pressure / (rho0 * g)
 
     return result
 
+
 def get_equilibrium_state(instance, iemic_state_file="iemic_state.amuse"):
-    print("starting equilibrium state by continuation of combined forcing from zero")
+    print(
+        "starting equilibrium state by continuation of combined forcing from zero"
+    )
 
     # the following line optionally redirects iemic output to file
     #~ instance.set_output_file("output.%p")
@@ -319,33 +343,37 @@ def get_equilibrium_state(instance, iemic_state_file="iemic_state.amuse"):
 
     print("all parameters (initial)")
     print(instance.parameters)
-    
+
     x = instance.get_state()
 
     print("THCM parameters (after init)")
     print(instance.Ocean__THCM__Starting_Parameters)
-    
+
     # numerical parameters for the continuation
-    parameters={"Newton Tolerance" : 1.e-2, "Verbose" : True,
-                "Minimum Step Size" : 0.001,
-                "Maximum Step Size" : 0.2,
-                "Delta" : 1.e-6 }
+    parameters = {
+        "Newton Tolerance": 1.e-2,
+        "Verbose": True,
+        "Minimum Step Size": 0.001,
+        "Maximum Step Size": 0.2,
+        "Delta": 1.e-6
+    }
 
     # setup continuation object
-    continuation=Continuation(instance, parameters)
-    
+    continuation = Continuation(instance, parameters)
+
     # Converge to an initial steady state
     x = continuation.newton(x)
-      
+
     print("start continuation, this may take a while")
 
     print("state:", instance.get_name_of_current_state())
 
-    x, mu = continuation.continuation(x, 'Ocean->THCM->Starting Parameters->Combined Forcing', 0., 1., 0.005)
+    x, mu = continuation.continuation(
+        x, 'Ocean->THCM->Starting Parameters->Combined Forcing', 0., 1., 0.005)
 
     print("continuation done")
 
     print(f"writing grid to {iemic_state_file}")
-    write_set_to_file(x.grid, iemic_state_file,"amuse", overwrite_file=True)
-    
+    write_set_to_file(x.grid, iemic_state_file, "amuse", overwrite_file=True)
+
     return x.grid.copy()
