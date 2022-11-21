@@ -1,30 +1,21 @@
 """
   example for running I-EMIC in a global configuration using OMUSE
-  
 """
 
 import numpy
 
-from omuse.units import units, constants
-from omuse.units import trigo
+from omuse.io import write_set_to_file
+from omuse.units import units
 
 from omuse.community.iemic.interface import iemic
 
-from omuse.io import write_set_to_file, read_set_from_file
-
 from fvm import Continuation
-
-from omuse.units import units
-
-import numpy
 
 # some utility functions
 # note that i-emic defines depth levels as negative numbers!
 
 
 def z_from_cellcenterz(zc, firstlevel=None):
-    if firstlevel is None:
-        top = 0 * zc[0]
     z = numpy.zeros(len(zc) + 1) * zc[0]
     direction = 1
     if zc[0] <= zc[0] * 0:
@@ -35,16 +26,13 @@ def z_from_cellcenterz(zc, firstlevel=None):
     return z[::direction]
 
 
-def depth_levels(N, stretch_factor=1.8):  #1.8
+def depth_levels(N, stretch_factor=1.8):
     z = numpy.arange(N) / (1. * (N - 1))
     if stretch_factor == 0:
         return z
     else:
         return 1 - numpy.tanh(stretch_factor *
                               (1 - z)) / numpy.tanh(stretch_factor)
-
-
-#~ print h
 
 
 def read_global_mask(Nx, Ny, Nz, filename=None):
@@ -285,8 +273,8 @@ def get_grid_with_units(grid):
     # note pressure is pressure anomaly (ie difference from hydrostatic)
     def add_units(mask, xvel, yvel, zvel, pressure, salt, temp):
         # salt and temp need to account for mask
-        #~ _salt=s0*(mask==0)+s_scale*salt
-        #~ _temp=t0*(mask==0)+t_scale*temp
+        # _salt = s0 * (mask==0) + s_scale * salt
+        # _temp = t0 * (mask==0) + t_scale * temp
         _salt = s0 + s_scale * salt
         _temp = t0 + t_scale * temp
         return uscale * xvel, uscale * yvel, uscale * zvel, pscale * pressure, _salt, _temp
@@ -337,7 +325,7 @@ def get_equilibrium_state(instance, iemic_state_file="iemic_state.amuse"):
     )
 
     # the following line optionally redirects iemic output to file
-    #~ instance.set_output_file("output.%p")
+    # instance.set_output_file("output.%p")
 
     print("state1:", instance.get_name_of_current_state())
 
