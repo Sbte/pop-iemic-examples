@@ -4,10 +4,14 @@
 
 import numpy
 
+from matplotlib import pyplot
+
 from omuse.io import write_set_to_file
-from omuse.units import units
+from omuse.units import units, constants
 
 from omuse.community.iemic.interface import iemic
+
+from bstream import barotropic_streamfunction, overturning_streamfunction
 
 from fvm import Continuation
 
@@ -15,7 +19,7 @@ from fvm import Continuation
 # note that i-emic defines depth levels as negative numbers!
 
 
-def z_from_cellcenterz(zc, firstlevel=None):
+def z_from_center(zc, firstlevel=None):
     z = numpy.zeros(len(zc) + 1) * zc[0]
     direction = 1
     if zc[0] <= zc[0] * 0:
@@ -290,6 +294,59 @@ def get_grid_with_units(grid):
     return result
 
 
+def plot_barotropic_streamfunction(grid, name="mstream.eps"):
+    u = grid.u_velocity
+
+    z = grid.z[0, 0, :]
+    z = z_from_center(z)
+    dz = z[1:] - z[:-1]
+
+    x = grid.lon[:, 0, 0]
+    y = grid.lat[0, :, 0]
+
+    # Test for uniform cell size to make our life easier
+    for i in range(1, len(y) - 1):
+        assert abs(y[i+1] - 2 * y[i] + y[i-1]) < 1e-12
+
+    dy = y[1] - y[0]
+    dy *= constants.Rearth
+
+    psib = barotropic_streamfunction(u, dz, dy)
+    psib = numpy.ma.array(psib.value_in(units.Sv)[:, 1:], mask=grid.mask[:, :, -1])
+
+    pyplot.figure()
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), psib.T)
+    pyplot.colorbar()
+    pyplot.savefig(name)
+
+
+def plot_overturning_streamfunction(grid, name="mstream.eps"):
+    v = grid.v_velocity
+
+    z = grid.z[0, 0, :]
+    z = z_from_center(z)
+    dz = z[1:] - z[:-1]
+
+    x = grid.lon[:, 0, 0]
+    y = grid.lat[0, :, 0]
+
+    # Test for uniform cell size to make our life easier
+    for i in range(1, len(x) - 1):
+        assert abs(x[i+1] - 2 * x[i] + x[i-1]) < 1e-12
+
+    dx = x[1] - x[0]
+    dx *= numpy.cos(grid.lat.value_in(units.rad)[0, :, 0])
+    dx *= constants.Rearth
+
+    psim = overturning_streamfunction(v, dz, dx)
+    psim = psim.value_in(units.Sv)
+
+    pyplot.figure()
+    pyplot.contourf(y.value_in(units.deg), z.value_in(units.m), psim.T)
+    pyplot.colorbar()
+    pyplot.savefig(name)
+
+
 # get surface grid with mask, lon, lat, ssh, uvel_barotropic, vvel_barotropic
 def get_surface_grid(grid):
     surface = grid[:, :, -1]  # note surface is -1
@@ -301,7 +358,7 @@ def get_surface_grid(grid):
 
     z = grid[0, 0, :].z
 
-    z_ = z_from_cellcenterz(z)
+    z_ = z_from_center(z)
     dz = z_[1:] - z_[:-1]
 
     def average_vel(v, dz):
