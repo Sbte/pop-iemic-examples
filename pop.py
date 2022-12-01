@@ -6,9 +6,11 @@ from matplotlib import pyplot
 numpy.random.seed(123451)
 
 from omuse.community.pop.interface import POP
-from omuse.units import units
+from omuse.units import units, constants
 
 from amuse.io import write_set_to_file, read_set_from_file
+
+from bstream import barotropic_streamfunction, overturning_streamfunction
 
 
 def simple_upscale(x, fx, fy):
@@ -147,6 +149,75 @@ def plot_grid(p):
     pyplot.plot(lon, lat, 'g.')
 
     pyplot.savefig("grid.png")
+
+
+def z_from_center(zc):
+    z = numpy.zeros(len(zc) + 1) * zc[0]
+
+    direction = 1
+    if zc[0] <= zc[0] * 0:
+        direction = -1
+
+    for i, _zc in enumerate(zc[::direction]):
+        half = _zc - z[i]
+        z[i + 1] = z[i] + 2 * half
+
+    return z[::direction]
+
+
+def plot_barotropic_streamfunction(p, name="bstream.eps"):
+    u = p.nodes3d.xvel
+    mask = (p.nodes.depth.value_in(units.km) == 0)
+
+    z = p.nodes3d.z[0, 0, :]
+    z = z_from_center(z)
+    dz = z[1:] - z[:-1]
+
+    x = p.nodes3d.lon[:, 0, 0]
+    y = p.nodes3d.lat[0, :, 0]
+
+    # Test for uniform cell size to make our life easier
+    for i in range(1, len(y) - 1):
+        assert abs(y[i+1] - 2 * y[i] + y[i-1]) < 1e-12
+
+    dy = y[1] - y[0]
+    dy *= constants.Rearth
+
+    psib = barotropic_streamfunction(u, dz, dy)
+    # psib = psib.value_in(units.Sv)[:, 1:]
+    psib = numpy.ma.array(psib.value_in(units.Sv)[:, 1:], mask=mask)
+
+    pyplot.figure()
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), psib.T)
+    pyplot.colorbar()
+    pyplot.savefig(name)
+
+
+def plot_overturning_streamfunction(p, name="mstream.eps"):
+    v = p.nodes3d.yvel
+
+    z = p.nodes3d.z[0, 0, :]
+    z = z_from_center(z)
+    dz = z[1:] - z[:-1]
+
+    x = p.nodes3d.lon[:, 0, 0]
+    y = p.nodes3d.lat[0, :, 0]
+
+    # Test for uniform cell size to make our life easier
+    for i in range(1, len(x) - 1):
+        assert abs(x[i+1] - 2 * x[i] + x[i-1]) < 1e-12
+
+    dx = x[1] - x[0]
+    dx *= numpy.cos(p.nodes3d[0, :, 0].lat.value_in(units.rad))
+    dx *= constants.Rearth
+
+    psim = overturning_streamfunction(v, dz, dx)
+    psim = psim.value_in(units.Sv)
+
+    pyplot.figure()
+    pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), psim.T)
+    pyplot.colorbar()
+    pyplot.savefig(name)
 
 
 def save_pop_state(p, label, directory="./"):
