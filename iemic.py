@@ -515,15 +515,140 @@ def get_forcing_with_units(i, grid):
     return result
 
 
-def plot_barotropic_streamfunction(grid, name="mstream.eps"):
-    u = grid.u_velocity
+def plot_u_velocity(grid, name="u_velocity.eps"):
+    x = grid.lon[:, 0, 0]
+    y = grid.lat[0, :, 0]
 
+    u = grid.u_velocity[:, :, -1]
+
+    pyplot.figure()
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), u.T.value_in(units.m / units.s))
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_v_velocity(grid, name="v_velocity.eps"):
+    x = grid.lon[:, 0, 0]
+    y = grid.lat[0, :, 0]
+
+    v = grid.v_velocity[:, :, -1]
+
+    pyplot.figure()
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), v.T.value_in(units.m / units.s))
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_surface_pressure(grid, name="surface_pressure.eps"):
+    x = grid.lon[:, 0, 0]
+    y = grid.lat[0, :, 0]
+
+    val = grid.pressure[:, :, -1]
+    val = numpy.ma.array(val.value_in(units.Pa), mask=grid.mask[:, :, -1])
+
+    pyplot.figure()
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_surface_salinity(grid, name="surface_salinity.eps"):
+    x = grid.lon[:, 0, 0]
+    y = grid.lat[0, :, 0]
+
+    val = grid.salinity[:, :, -1]
+    val = numpy.ma.array(val.value_in(units.psu), mask=grid.mask[:, :, -1])
+
+    pyplot.figure()
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_surface_temperature(grid, name="surface_temperature.eps"):
+    x = grid.lon[:, 0, 0]
+    y = grid.lat[0, :, 0]
+
+    val = grid.temperature[:, :, -1]
+    val = numpy.ma.array(val.value_in(units.Celsius), mask=grid.mask[:, :, -1])
+
+    pyplot.figure()
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_salinity(grid, name="salinity.eps"):
     z = grid.z[0, 0, :]
+    y = grid.lat[0, :, 0]
+
+    s = grid.salinity[0, :, :]
+    for i in range(1, grid.salinity.shape[0]):
+        s += grid.salinity[i, :, :]
+
+    s = s / grid.salinity.shape[0]
+    s = quantities.as_vector_quantity(s)
+
+    pyplot.figure()
+    pyplot.contourf(y.value_in(units.deg), z.value_in(units.m), s.T.value_in(units.psu))
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_temperature(grid, name="temperature.eps"):
+    z = grid.z[0, 0, :]
+    y = grid.lat[0, :, 0]
+
+    t = grid.temperature[0, :, :]
+    for i in range(1, grid.temperature.shape[0]):
+        t += grid.temperature[i, :, :]
+
+    t = t / grid.temperature.shape[0]
+
+    pyplot.figure()
+    pyplot.contourf(y.value_in(units.deg), z.value_in(units.m), t.T.value_in(units.Celsius))
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_streamplot(state, name="streamplot.eps"):
+    x = state.v_grid.lon[:, 0, 0]
+    y = state.v_grid.lat[0, :, 0]
+
+    u = state.v_grid.u_velocity[:, :, -1]
+    v = state.v_grid.v_velocity[:, :, -1]
+
+    u2 = numpy.ma.array(u.value_in(units.m / units.s), mask=state.t_grid.mask[:, :, -1])
+
+    pyplot.figure()
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), u2.T)
+    pyplot.colorbar()
+    pyplot.streamplot(
+        x.value_in(units.deg),
+        y.value_in(units.deg),
+        u.T.value_in(units.m / units.s),
+        v.T.value_in(units.m / units.s),
+    )
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_barotropic_streamfunction(state, name="bstream.eps"):
+    u = state.v_grid.u_velocity
+
+    z = state.v_grid.z[0, 0, :]
     z = z_from_center(z)
     dz = z[1:] - z[:-1]
 
-    x = grid.lon[:, 0, 0]
-    y = grid.lat[0, :, 0]
+    x = state.v_grid.lon[:, 0, 0]
+    y = state.v_grid.lat[0, :, 0]
 
     # Test for uniform cell size to make our life easier
     for i in range(1, len(y) - 1):
@@ -533,7 +658,7 @@ def plot_barotropic_streamfunction(grid, name="mstream.eps"):
     dy *= constants.Rearth
 
     psib = barotropic_streamfunction(u, dz, dy)
-    psib = numpy.ma.array(psib.value_in(units.Sv)[:, 1:], mask=grid.mask[:, :, -1])
+    psib = numpy.ma.array(psib.value_in(units.Sv)[:, 1:], mask=state.t_grid.mask[:, :, -1])
 
     pyplot.figure()
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), psib.T)
