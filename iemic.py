@@ -31,27 +31,25 @@ def z_from_center(zc, firstlevel=None):
 
 
 def depth_levels(N, stretch_factor=1.8):
-    z = numpy.arange(N) / (1. * (N - 1))
+    z = numpy.arange(N) / (1.0 * (N - 1))
     if stretch_factor == 0:
         return z
     else:
-        return 1 - numpy.tanh(stretch_factor *
-                              (1 - z)) / numpy.tanh(stretch_factor)
+        return 1 - numpy.tanh(stretch_factor * (1 - z)) / numpy.tanh(stretch_factor)
 
 
 def read_global_mask(Nx, Ny, Nz, filename=None):
     if filename is None:
         filename = "mask_global_{0}x{1}x{2}".format(Nx, Ny, Nz)
 
-    mask = numpy.zeros((Nx + 2, Ny + 2, Nz + 2), dtype='int')
+    mask = numpy.zeros((Nx + 2, Ny + 2, Nz + 2), dtype="int")
 
-    f = open(filename, 'r')
+    f = open(filename, "r")
     for k in range(Nz + 2):
         line = f.readline()  # ignored
         for j in range(Ny + 2):
             line = f.readline()
-            mask[:, j, k] = numpy.array([int(d)
-                                         for d in line[:-1]])  # ignore newline
+            mask[:, j, k] = numpy.array([int(d) for d in line[:-1]])  # ignore newline
 
     mask = mask[1:-1, 1:-1, 1:-1]  # ignore edges
 
@@ -183,9 +181,11 @@ def initialize_global_iemic(number_of_workers=1, redirection="none"):
 
     print(f"initializing IEMIC with {number_of_workers} workers")
 
-    i = iemic(number_of_workers=number_of_workers,
-              redirection=redirection,
-              channel_type="sockets")
+    i = iemic(
+        number_of_workers=number_of_workers,
+        redirection=redirection,
+        channel_type="sockets",
+    )
 
     i.parameters.Ocean__Belos_Solver__FGMRES_tolerance = 1e-03
     i.parameters.Ocean__Belos_Solver__FGMRES_iterations = 800
@@ -203,7 +203,7 @@ def initialize_global_iemic(number_of_workers=1, redirection="none"):
     i.parameters.Ocean__THCM__Global_Grid_Size_l = 12
 
     i.parameters.Ocean__THCM__Grid_Stretching_qz = 2.25
-    i.parameters.Ocean__THCM__Depth_hdim = 5000.
+    i.parameters.Ocean__THCM__Depth_hdim = 5000.0
 
     i.parameters.Ocean__THCM__Topography = 0
     i.parameters.Ocean__THCM__Flat_Bottom = False
@@ -213,11 +213,11 @@ def initialize_global_iemic(number_of_workers=1, redirection="none"):
 
     i.parameters.Ocean__THCM__Rho_Mixing = False
 
-    i.parameters.Ocean__THCM__Starting_Parameters__Combined_Forcing = 0.
-    i.parameters.Ocean__THCM__Starting_Parameters__Salinity_Forcing = 1.
-    i.parameters.Ocean__THCM__Starting_Parameters__Solar_Forcing = 0.
-    i.parameters.Ocean__THCM__Starting_Parameters__Temperature_Forcing = 10.
-    i.parameters.Ocean__THCM__Starting_Parameters__Wind_Forcing = 1.
+    i.parameters.Ocean__THCM__Starting_Parameters__Combined_Forcing = 0.0
+    i.parameters.Ocean__THCM__Starting_Parameters__Salinity_Forcing = 1.0
+    i.parameters.Ocean__THCM__Starting_Parameters__Solar_Forcing = 0.0
+    i.parameters.Ocean__THCM__Starting_Parameters__Temperature_Forcing = 10.0
+    i.parameters.Ocean__THCM__Starting_Parameters__Wind_Forcing = 1.0
 
     i.parameters.Ocean__Analyze_Jacobian = True
 
@@ -231,8 +231,8 @@ def get_mask(i):
 def get_surface_forcings(i, forcings_file="forcings.amuse"):
 
     # these are hardcoded in iemic!
-    t0 = 15. | units.Celsius
-    s0 = 35. | units.psu
+    t0 = 15.0 | units.Celsius
+    s0 = 35.0 | units.psu
     tau0 = 0.1 | units.Pa
 
     # amplitudes
@@ -240,14 +240,15 @@ def get_surface_forcings(i, forcings_file="forcings.amuse"):
     s_a = i.parameters.Ocean__THCM__Starting_Parameters__Salinity_Forcing | units.psu
 
     def attributes(lon, lat, tatm, emip, tau_x, tau_y):
-        return (lon, lat, t0 + t_a * tatm, s0 + s_a * emip, tau0 * tau_x,
-                tau0 * tau_y)
+        return (lon, lat, t0 + t_a * tatm, s0 + s_a * emip, tau0 * tau_x, tau0 * tau_y)
 
     forcings = i.surface_forcing.empty_copy()
     channel = i.surface_forcing.new_channel_to(forcings)
-    channel.transform(["lon", "lat", "tatm", "emip", "tau_x", "tau_y"],
-                      attributes,
-                      ["lon", "lat", "tatm", "emip", "tau_x", "tau_y"])
+    channel.transform(
+        ["lon", "lat", "tatm", "emip", "tau_x", "tau_y"],
+        attributes,
+        ["lon", "lat", "tatm", "emip", "tau_x", "tau_y"],
+    )
 
     write_set_to_file(forcings, forcings_file, "amuse", overwrite_file=True)
 
@@ -264,14 +265,14 @@ def get_grid_with_units(grid):
     channel.copy_attributes(["mask", "lon", "lat", "z"])
 
     # hardcoded constants in I-EMIC
-    rho0 = 1.024e+03 | units.kg / units.m**3
-    r0 = 6.37e+06 | units.m
-    omega0 = 7.292e-05 | units.s**-1
+    rho0 = 1.024e03 | units.kg / units.m ** 3
+    r0 = 6.37e06 | units.m
+    omega0 = 7.292e-05 | units.s ** -1
     uscale = 0.1 | units.m / units.s
-    t0 = 15. | units.Celsius
-    s0 = 35. | units.psu
+    t0 = 15.0 | units.Celsius
+    s0 = 35.0 | units.psu
     pscale = 2 * omega0 * r0 * uscale * rho0
-    s_scale = 1. | units.psu
+    s_scale = 1.0 | units.psu
     t_scale = 1 | units.Celsius
 
     # note pressure is pressure anomaly (ie difference from hydrostatic)
@@ -281,15 +282,35 @@ def get_grid_with_units(grid):
         # _temp = t0 * (mask==0) + t_scale * temp
         _salt = s0 + s_scale * salt
         _temp = t0 + t_scale * temp
-        return uscale * xvel, uscale * yvel, uscale * zvel, pscale * pressure, _salt, _temp
+        return (
+            uscale * xvel,
+            uscale * yvel,
+            uscale * zvel,
+            pscale * pressure,
+            _salt,
+            _temp,
+        )
 
-    channel.transform([
-        "u_velocity", "v_velocity", "w_velocity", "pressure", "salinity",
-        "temperature"
-    ], add_units, [
-        "mask", "u_velocity", "v_velocity", "w_velocity", "pressure",
-        "salinity", "temperature"
-    ])
+    channel.transform(
+        [
+            "u_velocity",
+            "v_velocity",
+            "w_velocity",
+            "pressure",
+            "salinity",
+            "temperature",
+        ],
+        add_units,
+        [
+            "mask",
+            "u_velocity",
+            "v_velocity",
+            "w_velocity",
+            "pressure",
+            "salinity",
+            "temperature",
+        ],
+    )
 
     return result
 
@@ -306,7 +327,7 @@ def plot_barotropic_streamfunction(grid, name="mstream.eps"):
 
     # Test for uniform cell size to make our life easier
     for i in range(1, len(y) - 1):
-        assert abs(y[i+1] - 2 * y[i] + y[i-1]) < 1e-12
+        assert abs(y[i + 1] - 2 * y[i] + y[i - 1]) < 1e-12
 
     dy = y[1] - y[0]
     dy *= constants.Rearth
@@ -332,7 +353,7 @@ def plot_overturning_streamfunction(grid, name="mstream.eps"):
 
     # Test for uniform cell size to make our life easier
     for i in range(1, len(x) - 1):
-        assert abs(x[i+1] - 2 * x[i] + x[i-1]) < 1e-12
+        assert abs(x[i + 1] - 2 * x[i] + x[i - 1]) < 1e-12
 
     dx = x[1] - x[0]
     dx *= numpy.cos(grid.lat.value_in(units.rad)[0, :, 0])
@@ -368,8 +389,8 @@ def get_surface_grid(grid):
     result.vvel_barotropic = average_vel(grid.v_velocity, dz)
 
     # values hardcoded in IEMIC
-    rho0 = 1.024e+03 | units.kg / units.m**3
-    g = 9.8 | units.m / units.s**2
+    rho0 = 1.024e03 | units.kg / units.m ** 3
+    g = 9.8 | units.m / units.s ** 2
 
     result.ssh = surface.pressure / (rho0 * g)
 
@@ -377,9 +398,7 @@ def get_surface_grid(grid):
 
 
 def get_equilibrium_state(instance, iemic_state_file="iemic_state.amuse"):
-    print(
-        "starting equilibrium state by continuation of combined forcing from zero"
-    )
+    print("starting equilibrium state by continuation of combined forcing from zero")
 
     # the following line optionally redirects iemic output to file
     # instance.set_output_file("output.%p")
@@ -396,11 +415,11 @@ def get_equilibrium_state(instance, iemic_state_file="iemic_state.amuse"):
 
     # numerical parameters for the continuation
     parameters = {
-        "Newton Tolerance": 1.e-2,
+        "Newton Tolerance": 1.0e-2,
         "Verbose": True,
         "Minimum Step Size": 0.001,
         "Maximum Step Size": 0.2,
-        "Delta": 1.e-6
+        "Delta": 1.0e-6,
     }
 
     # setup continuation object
@@ -413,8 +432,7 @@ def get_equilibrium_state(instance, iemic_state_file="iemic_state.amuse"):
 
     print("state:", instance.get_name_of_current_state())
 
-    x, mu = continuation.continuation(
-        x, 'Ocean->THCM->Starting Parameters->Combined Forcing', 0., 1., 0.005)
+    x, mu = continuation.continuation(x, "Ocean->THCM->Starting Parameters->Combined Forcing", 0.0, 1.0, 0.005)
 
     print("continuation done")
 
