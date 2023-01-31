@@ -570,6 +570,44 @@ def plot_overturning_streamfunction(grid, name="mstream.eps"):
     pyplot.close()
 
 
+def get_ssh(i):
+    surface = i.t_grid[:, :, -1]  # note surface is -1
+    result = surface.empty_copy()
+
+    channel = surface.new_channel_to(result)
+    channel.copy_attributes(["lon", "lat"])
+
+    # values hardcoded in IEMIC
+    rho0 = 1.024e03 | units.kg / units.m ** 3
+    g = 9.8 | units.m / units.s ** 2
+
+    result.ssh = surface.pressure / (rho0 * g)
+
+    return result
+
+
+def get_barotropic_velocities(i):
+    surface = i.v_grid[:, :, -1]  # note surface is -1
+    result = surface.empty_copy()
+
+    channel = surface.new_channel_to(result)
+
+    channel.copy_attributes(["lon", "lat"])
+
+    z = i.v_grid[0, 0, :].z
+
+    z_ = z_from_center(z)
+    dz = z_[1:] - z_[:-1]
+
+    def average_vel(v, dz):
+        return (v * dz).sum(axis=-1) / dz.sum()
+
+    result.uvel_barotropic = average_vel(i.v_grid.u_velocity, dz)
+    result.vvel_barotropic = average_vel(i.v_grid.v_velocity, dz)
+
+    return result
+
+
 # get surface grid with mask, lon, lat, ssh, uvel_barotropic, vvel_barotropic
 def get_surface_grid(grid):
     surface = grid[:, :, -1]  # note surface is -1
