@@ -339,6 +339,7 @@ def plot_barotropic_streamfunction(grid, name="mstream.eps"):
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), psib.T)
     pyplot.colorbar()
     pyplot.savefig(name)
+    pyplot.close()
 
 
 def plot_overturning_streamfunction(grid, name="mstream.eps"):
@@ -366,6 +367,7 @@ def plot_overturning_streamfunction(grid, name="mstream.eps"):
     pyplot.contourf(y.value_in(units.deg), z.value_in(units.m), psim.T)
     pyplot.colorbar()
     pyplot.savefig(name)
+    pyplot.close()
 
 
 # get surface grid with mask, lon, lat, ssh, uvel_barotropic, vvel_barotropic
