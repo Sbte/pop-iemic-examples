@@ -2,12 +2,14 @@
   example for running I-EMIC in a global configuration using OMUSE
 """
 
+import xml.etree.ElementTree as xml
 import numpy
+import os
 
 from matplotlib import pyplot
 
-from omuse.io import write_set_to_file
-from omuse.units import units, constants
+from omuse.io import write_set_to_file, read_set_from_file
+from omuse.units import units, constants, quantities
 
 from omuse.community.iemic.interface import iemic
 
@@ -255,6 +257,96 @@ def get_surface_forcings(i, forcings_file="forcings.amuse"):
     return forcings
 
 
+def save_iemic_state(i, label, directory="./"):
+    if not os.path.exists(directory):
+        os.mkdir(directory)
+
+    for d in i.data_store_names():
+        write_set_to_file(
+            getattr(i, d),
+            os.path.join(directory, label + "_" + d + ".amuse"),
+            "amuse",
+            overwrite_file=True,
+        )
+
+    i.save_xml_parameters("Ocean", os.path.join(directory, label + "_parameters.xml"))
+
+
+def load_iemic_state(i, label, directory="./", copy_forcing=False):
+    v_grid = read_set_from_file(os.path.join(directory, label + "_v_grid.amuse"), "amuse")
+    w_grid = read_set_from_file(os.path.join(directory, label + "_w_grid.amuse"), "amuse")
+    t_grid = read_set_from_file(os.path.join(directory, label + "_t_grid.amuse"), "amuse")
+
+    channel = v_grid.new_channel_to(i.v_grid)
+    channel.copy_attributes(["u_velocity", "v_velocity"])
+
+    channel = w_grid.new_channel_to(i.w_grid)
+    channel.copy_attributes(["w_velocity"])
+
+    channel = t_grid.new_channel_to(i.t_grid)
+    channel.copy_attributes(["pressure", "temperature", "salinity"])
+
+    i.load_xml_parameters("Ocean", os.path.join(directory, label + "_parameters.xml"))
+
+    if not copy_forcing:
+        return
+
+    surface_v_grid = read_set_from_file(os.path.join(directory, label + "_surface_v_grid.amuse"), "amuse")
+    surface_t_grid = read_set_from_file(os.path.join(directory, label + "_surface_t_grid.amuse"), "amuse")
+
+    channel = surface_v_grid.new_channel_to(i.surface_v_grid)
+    channel.copy_attributes(["tau_x", "tau_y"])
+
+    channel = surface_t_grid.new_channel_to(i.surface_t_grid)
+    channel.copy_attributes(["tatm", "emip"])
+
+
+def read_iemic_parameters(label, directory="./"):
+    tree = xml.parse(os.path.join(directory, label + "_parameters.xml"))
+    return tree.getroot()
+
+
+def read_iemic_state_with_units(label, directory="./"):
+    class FakeIemicInterface:
+        def __init__(self):
+            self.parameters = None
+
+        def _get_parameter(self, root, *args):
+            elem = root.find(".//*[@name='{}']".format(args[0]))
+            if len(args) > 1:
+                return self._get_parameter(elem, *args[1:])
+
+            return float(elem.get("value"))
+
+        def get_parameter(self, name):
+            return self._get_parameter(self.parameters, *name.split("->"))
+
+    i = FakeIemicInterface()
+    i.parameters = read_iemic_parameters(label, directory)
+
+    i.v_grid = read_set_from_file(os.path.join(directory, label + "_v_grid.amuse"), "amuse")
+    i.v_grid = get_grid_with_units(i.v_grid)
+    i.v_grid.set_axes_names(["lon", "lat", "z"])
+
+    i.w_grid = read_set_from_file(os.path.join(directory, label + "_w_grid.amuse"), "amuse")
+    i.w_grid = get_grid_with_units(i.w_grid)
+    i.w_grid.set_axes_names(["lon", "lat", "z"])
+
+    i.t_grid = read_set_from_file(os.path.join(directory, label + "_t_grid.amuse"), "amuse")
+    i.t_grid = get_grid_with_units(i.t_grid)
+    i.t_grid.set_axes_names(["lon", "lat", "z"])
+
+    i.surface_v_grid = read_set_from_file(os.path.join(directory, label + "_surface_v_grid.amuse"), "amuse")
+    i.surface_v_grid = get_forcing_with_units(i, i.surface_v_grid)
+    i.surface_v_grid.set_axes_names(["lon", "lat"])
+
+    i.surface_t_grid = read_set_from_file(os.path.join(directory, label + "_surface_t_grid.amuse"), "amuse")
+    i.surface_t_grid = get_forcing_with_units(i, i.surface_t_grid)
+    i.surface_t_grid.set_axes_names(["lon", "lat"])
+
+    return i
+
+
 # convenience function to get grid with physical units
 # this should really be available on the iemic interface
 def get_grid_with_units(grid):
@@ -262,7 +354,8 @@ def get_grid_with_units(grid):
 
     channel = grid.new_channel_to(result)
 
-    channel.copy_attributes(["mask", "lon", "lat", "z"])
+    attributes = grid.get_attribute_names_defined_in_store()
+    channel.copy_attributes([attr for attr in ["mask", "lon", "lat", "z"] if attr in attributes])
 
     # hardcoded constants in I-EMIC
     rho0 = 1.024e03 | units.kg / units.m ** 3
@@ -275,42 +368,149 @@ def get_grid_with_units(grid):
     s_scale = 1.0 | units.psu
     t_scale = 1 | units.Celsius
 
+    def add_units_v(*args):
+        return [uscale * arg for arg in args]
+
     # note pressure is pressure anomaly (ie difference from hydrostatic)
-    def add_units(mask, xvel, yvel, zvel, pressure, salt, temp):
+    def add_units_t(mask, pressure, salt, temp):
         # salt and temp need to account for mask
-        # _salt = s0 * (mask==0) + s_scale * salt
-        # _temp = t0 * (mask==0) + t_scale * temp
-        _salt = s0 + s_scale * salt
-        _temp = t0 + t_scale * temp
+        _salt = s0 * (mask == 0) + s_scale * salt
+        _temp = t0 * (mask == 0) + t_scale * temp
+        # _salt = s0 + s_scale * salt
+        # _temp = t0 + t_scale * temp
+        _salt = quantities.as_vector_quantity(_salt)
         return (
-            uscale * xvel,
-            uscale * yvel,
-            uscale * zvel,
             pscale * pressure,
             _salt,
             _temp,
         )
 
-    channel.transform(
-        [
-            "u_velocity",
-            "v_velocity",
-            "w_velocity",
-            "pressure",
-            "salinity",
-            "temperature",
-        ],
-        add_units,
-        [
-            "mask",
-            "u_velocity",
-            "v_velocity",
-            "w_velocity",
-            "pressure",
-            "salinity",
-            "temperature",
-        ],
-    )
+    if "u_velocity" in attributes:
+        channel.transform(
+            [
+                "u_velocity",
+                "v_velocity",
+            ],
+            add_units_v,
+            [
+                "u_velocity",
+                "v_velocity",
+            ],
+        )
+
+        channel.transform(
+            [
+                "u_forcing",
+                "v_forcing",
+            ],
+            add_units_v,
+            [
+                "u_forcing",
+                "v_forcing",
+            ],
+        )
+    elif "w_velocity" in attributes:
+        channel.transform(
+            [
+                "w_velocity",
+            ],
+            add_units_v,
+            [
+                "w_velocity",
+            ],
+        )
+
+        channel.transform(
+            [
+                "w_forcing",
+            ],
+            add_units_v,
+            [
+                "w_forcing",
+            ],
+        )
+    else:
+        channel.transform(
+            [
+                "pressure",
+                "salinity",
+                "temperature",
+            ],
+            add_units_t,
+            [
+                "mask",
+                "pressure",
+                "salinity",
+                "temperature",
+            ],
+        )
+
+        channel.transform(
+            [
+                "pressure_forcing",
+                "salinity_forcing",
+                "temperature_forcing",
+            ],
+            add_units_t,
+            [
+                "mask",
+                "pressure_forcing",
+                "salinity_forcing",
+                "temperature_forcing",
+            ],
+        )
+
+    return result
+
+
+def get_forcing_with_units(i, grid):
+    result = grid.empty_copy()
+
+    channel = grid.new_channel_to(result)
+
+    attributes = grid.get_attribute_names_defined_in_store()
+    channel.copy_attributes([attr for attr in ["lon", "lat"] if attr in attributes])
+
+    # these are hardcoded in iemic!
+    t0 = 15.0 | units.Celsius
+    s0 = 35.0 | units.psu
+    tau0 = 0.1 | units.Pa
+
+    # amplitudes
+    cf = i.get_parameter("THCM->Starting Parameters->Combined Forcing")
+    t_a = cf * i.get_parameter("THCM->Starting Parameters->Temperature Forcing") | units.Celsius
+    s_a = cf * i.get_parameter("THCM->Starting Parameters->Salinity Forcing") | units.psu
+
+    def add_units_v(tau_x, tau_y):
+        return (tau0 * tau_x, tau0 * tau_y)
+
+    def add_units_t(tatm, emip):
+        return (t0 + t_a * tatm, s0 + s_a * emip)
+
+    if "tau_x" in attributes:
+        channel.transform(
+            [
+                "tau_x",
+                "tau_y",
+            ],
+            add_units_v,
+            [
+                "tau_x",
+                "tau_y",
+            ],
+        )
+    else:
+        channel.transform(
+            [
+                "tatm",
+                "emip",
+            ],
+            add_units_t,
+            [
+                "tatm",
+                "emip",
+            ],
+        )
 
     return result
 
