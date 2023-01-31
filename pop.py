@@ -18,7 +18,7 @@ def simple_upscale(x, fx, fy):
     return numpy.kron(x, numpy.ones((fx, fy)))
 
 
-def plot_forcings_and_depth(p):
+def plot_forcings_and_depth(p, label='pop'):
     pyplot.figure()
     val = p.nodes.depth.value_in(units.km).T
     mask = (val == 0)
@@ -26,7 +26,7 @@ def plot_forcings_and_depth(p):
     pyplot.imshow(val, origin="lower")
     cbar = pyplot.colorbar()
     cbar.set_label("depth (km)")
-    pyplot.savefig("depth.png")
+    pyplot.savefig(label + "_depth.png")
     pyplot.close()
 
     pyplot.figure()
@@ -35,7 +35,8 @@ def plot_forcings_and_depth(p):
     pyplot.imshow(val, origin="lower")
     cbar = pyplot.colorbar()
     cbar.set_label("wind stress (Pa)")
-    pyplot.savefig("taux.png")
+    pyplot.savefig(label + "_taux.png")
+    pyplot.close()
 
     pyplot.figure()
     val = p.element_forcings.restoring_temp.value_in(units.Celsius).T
@@ -43,7 +44,7 @@ def plot_forcings_and_depth(p):
     pyplot.imshow(val, origin="lower")
     cbar = pyplot.colorbar()
     cbar.set_label("restoring T (C)")
-    pyplot.savefig("restoring_temp.png")
+    pyplot.savefig(label + "_restoring_temp.png")
     pyplot.close()
 
     pyplot.figure()
@@ -52,7 +53,7 @@ def plot_forcings_and_depth(p):
     pyplot.imshow(val, origin="lower")
     cbar = pyplot.colorbar()
     cbar.set_label("restoring salt (psu)")
-    pyplot.savefig("restoring_salt.png")
+    pyplot.savefig(label + "_restoring_salt.png")
     pyplot.close()
 
 
