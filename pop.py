@@ -27,6 +27,7 @@ def plot_forcings_and_depth(p):
     cbar = pyplot.colorbar()
     cbar.set_label("depth (km)")
     pyplot.savefig("depth.png")
+    pyplot.close()
 
     pyplot.figure()
     val = p.forcings.tau_x.value_in(units.Pa).T
@@ -43,6 +44,7 @@ def plot_forcings_and_depth(p):
     cbar = pyplot.colorbar()
     cbar.set_label("restoring T (C)")
     pyplot.savefig("restoring_temp.png")
+    pyplot.close()
 
     pyplot.figure()
     val = p.element_forcings.restoring_salt.value_in(units.g / units.kg).T
@@ -51,6 +53,7 @@ def plot_forcings_and_depth(p):
     cbar = pyplot.colorbar()
     cbar.set_label("restoring salt (psu)")
     pyplot.savefig("restoring_salt.png")
+    pyplot.close()
 
 
 def initialize_pop(depth_levels,
@@ -125,6 +128,7 @@ def plot_sst(p):
                   vmax=30)
     pyplot.colorbar()
     pyplot.savefig("sst.png")
+    pyplot.close()
 
 
 def plot_ssh(nodes, label="ssh"):
@@ -135,6 +139,7 @@ def plot_ssh(nodes, label="ssh"):
                   vmax=1)
     pyplot.colorbar()
     pyplot.savefig(label + ".png")
+    pyplot.close()
 
 
 def plot_grid(p):
@@ -149,6 +154,7 @@ def plot_grid(p):
     pyplot.plot(lon, lat, 'g.')
 
     pyplot.savefig("grid.png")
+    pyplot.close()
 
 
 def z_from_center(zc):
@@ -191,6 +197,7 @@ def plot_barotropic_streamfunction(p, name="bstream.eps"):
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), psib.T)
     pyplot.colorbar()
     pyplot.savefig(name)
+    pyplot.close()
 
 
 def plot_overturning_streamfunction(p, name="mstream.eps"):
@@ -218,6 +225,7 @@ def plot_overturning_streamfunction(p, name="mstream.eps"):
     pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), psim.T)
     pyplot.colorbar()
     pyplot.savefig(name)
+    pyplot.close()
 
 
 def save_pop_state(p, label, directory="./"):
