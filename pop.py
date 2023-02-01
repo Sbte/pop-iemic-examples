@@ -432,7 +432,7 @@ def long_evolve(p,
         if tnow > 0 * tnow:
             eta = (tend - tnow) / (tnow / (t2 - t1))
         else:
-            eta = 999999
+            eta = -1
 
         print((t2 - t1) / 3600, "| evolve to", tnext.in_(units.yr),
               " ETA (hr):", eta / 3600.)
