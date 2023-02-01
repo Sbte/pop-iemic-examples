@@ -6,7 +6,7 @@ from matplotlib import pyplot
 numpy.random.seed(123451)
 
 from omuse.community.pop.interface import POP
-from omuse.units import units, constants
+from omuse.units import units, constants, quantities
 
 from amuse.io import write_set_to_file, read_set_from_file
 
@@ -158,6 +158,19 @@ def plot_grid(p):
     pyplot.close()
 
 
+def plot_velocity(p, name="velocity.eps"):
+    x = p.nodes3d.lon[:, 0, 0]
+    y = p.nodes3d.lat[0, :, 0]
+
+    s = p.nodes3d.xvel[:, :, 0]
+
+    pyplot.figure()
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), s.T.value_in(units.m / units.s))
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
 def z_from_center(zc):
     z = numpy.zeros(len(zc) + 1) * zc[0]
 
@@ -170,6 +183,96 @@ def z_from_center(zc):
         z[i + 1] = z[i] + 2 * half
 
     return z[::direction]
+
+
+def plot_salinity(p, name="salinity.eps"):
+    z = p.nodes3d.z[0, 0, :]
+    y = p.nodes3d.lat[0, :, 0]
+
+    salinity = p.elements3d.salinity
+    val = salinity[0, :, :]
+    for i in range(1, salinity.shape[0]):
+        val += salinity[i, :, :]
+
+    val = val / salinity.shape[0]
+    val = quantities.as_vector_quantity(val)
+
+    pyplot.figure()
+    pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), val.T.value_in(units.psu))
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_temperature(p, name="temperature.eps"):
+    z = p.nodes3d.z[0, 0, :]
+    y = p.nodes3d.lat[0, :, 0]
+
+    temperature = p.elements3d.temperature
+    val = temperature[0, :, :]
+    for i in range(1, temperature.shape[0]):
+        val += temperature[i, :, :]
+
+    val = val / temperature.shape[0]
+
+    pyplot.figure()
+    pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), val.T.value_in(units.Celsius))
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_surface_salinity(p, name="surface_salinity.eps"):
+    x = p.elements3d.lon[:, 0, 0]
+    y = p.elements3d.lat[0, :, 0]
+
+    val = p.elements3d.salinity[:, :, 0]
+    mask = (p.nodes.depth.value_in(units.km) == 0)
+    val = numpy.ma.array(val.value_in(units.psu), mask=mask)
+
+    pyplot.figure()
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_surface_temperature(p, name="surface_temperature.eps"):
+    x = p.elements3d.lon[:, 0, 0]
+    y = p.elements3d.lat[0, :, 0]
+
+    val = p.elements3d.temperature[:, :, 0]
+    mask = (p.nodes.depth.value_in(units.km) == 0)
+    val = numpy.ma.array(val.value_in(units.Celsius), mask=mask)
+
+    pyplot.figure()
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_streamplot(p, name="streamplot.eps"):
+    x = p.nodes3d.lon[:, 0, 0]
+    y = p.nodes3d.lat[0, :, 0]
+
+    u = p.nodes3d.xvel[:, :, 0]
+    v = p.nodes3d.yvel[:, :, 0]
+
+    mask = (p.nodes.depth.value_in(units.km) == 0)
+    u2 = numpy.ma.array(u.value_in(units.m / units.s), mask=mask)
+
+    pyplot.figure()
+    pyplot.contourf(
+        x.value_in(units.deg), y.value_in(units.deg), u2.T
+    )
+    pyplot.colorbar()
+    pyplot.streamplot(
+        x.value_in(units.deg), y.value_in(units.deg),
+        u.T.value_in(units.m / units.s), v.T.value_in(units.m / units.s)
+    )
+    pyplot.savefig(name)
+    pyplot.close()
 
 
 def barotropic_streamfunction(p):
