@@ -451,10 +451,10 @@ def long_restart(p,
     long_evolve(p, tend=tend - tsnap, dt=dt, i0=ibegin, snapdir=snapdir)
 
 
-def evolve_test(p):
+def evolve_test(p, days=10):
 
-    tend1 = 10. | units.day
-    label1 = "10"
+    tend1 = days | units.day
+    label1 = str(days)
 
     t1 = time.time()
 
