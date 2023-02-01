@@ -121,20 +121,20 @@ def evolve(p, tend=10 | units.day, dt=1. | units.day):
         print("evolve to", t)
 
 
-def plot_sst(p):
+def plot_sst(p, label="sst"):
     pyplot.figure()
     pyplot.imshow(p.elements.temperature.value_in(units.Celsius).T,
                   origin="lower",
                   vmin=0,
                   vmax=30)
     pyplot.colorbar()
-    pyplot.savefig("sst.png")
+    pyplot.savefig(label + ".png")
     pyplot.close()
 
 
-def plot_ssh(nodes, label="ssh"):
+def plot_ssh(p, label="ssh"):
     pyplot.figure()
-    pyplot.imshow(nodes.ssh.value_in(units.m).T,
+    pyplot.imshow(p.elements.ssh.value_in(units.m).T,
                   origin="lower",
                   vmin=-1,
                   vmax=1)
