@@ -18,10 +18,10 @@ def simple_upscale(x, fx, fy):
     return numpy.kron(x, numpy.ones((fx, fy)))
 
 
-def plot_forcings_and_depth(p, label='pop'):
+def plot_forcings_and_depth(p, label="pop"):
     pyplot.figure()
     val = p.nodes.depth.value_in(units.km).T
-    mask = (val == 0)
+    mask = val == 0
     val = numpy.ma.array(val, mask=mask)
     pyplot.imshow(val, origin="lower")
     cbar = pyplot.colorbar()
@@ -57,32 +57,30 @@ def plot_forcings_and_depth(p, label='pop'):
     pyplot.close()
 
 
-def initialize_pop(depth_levels,
-                   depth_array,
-                   mode='96x120x12',
-                   number_of_workers=4,
-                   latmin=-90 | units.deg,
-                   latmax=90 | units.deg):
+def initialize_pop(
+    depth_levels, depth_array, mode="96x120x12", number_of_workers=4, latmin=-90 | units.deg, latmax=90 | units.deg
+):
 
     print(f"initializing POP mode {mode} with {number_of_workers} workers")
 
-    p = POP(number_of_workers=number_of_workers, mode=mode, redirection="none"
-            )  # , job_scheduler="slurm") #, channel_type="sockets"
+    p = POP(
+        number_of_workers=number_of_workers, mode=mode, redirection="none"
+    )  # , job_scheduler="slurm") #, channel_type="sockets"
 
     dz = depth_levels[1:] - depth_levels[:-1]
     # print(f"dz: {dz}")
 
-    p.parameters.topography_option = 'amuse'
+    p.parameters.topography_option = "amuse"
     p.parameters.depth_index = depth_array
-    p.parameters.horiz_grid_option = 'amuse'
+    p.parameters.horiz_grid_option = "amuse"
     p.parameters.lonmin = 0 | units.deg
     p.parameters.lonmax = 360 | units.deg
     p.parameters.latmin = latmin
     p.parameters.latmax = latmax
-    p.parameters.vert_grid_option = 'amuse'
+    p.parameters.vert_grid_option = "amuse"
     p.parameters.vertical_layer_thicknesses = dz
-    p.parameters.surface_heat_flux_forcing = 'amuse'
-    p.parameters.surface_freshwater_flux_forcing = 'amuse'
+    p.parameters.surface_heat_flux_forcing = "amuse"
+    p.parameters.surface_freshwater_flux_forcing = "amuse"
 
     # print(p.nodes[0,0].lon.in_(units.deg))
     # print(p.nodes[0,0].lat.in_(units.deg))
@@ -106,8 +104,7 @@ def initialize_pop(depth_levels,
     return p
 
 
-def evolve(p, tend=10 | units.day, dt=1. | units.day):
-
+def evolve(p, tend=10 | units.day, dt=1.0 | units.day):
     tnow = p.model_time
     tend = tnow + tend
 
@@ -123,10 +120,7 @@ def evolve(p, tend=10 | units.day, dt=1. | units.day):
 
 def plot_sst(p, label="sst"):
     pyplot.figure()
-    pyplot.imshow(p.elements.temperature.value_in(units.Celsius).T,
-                  origin="lower",
-                  vmin=0,
-                  vmax=30)
+    pyplot.imshow(p.elements.temperature.value_in(units.Celsius).T, origin="lower", vmin=0, vmax=30)
     pyplot.colorbar()
     pyplot.savefig(label + ".png")
     pyplot.close()
@@ -134,25 +128,21 @@ def plot_sst(p, label="sst"):
 
 def plot_ssh(p, label="ssh"):
     pyplot.figure()
-    pyplot.imshow(p.elements.ssh.value_in(units.m).T,
-                  origin="lower",
-                  vmin=-1,
-                  vmax=1)
+    pyplot.imshow(p.elements.ssh.value_in(units.m).T, origin="lower", vmin=-1, vmax=1)
     pyplot.colorbar()
     pyplot.savefig(label + ".png")
     pyplot.close()
 
 
 def plot_grid(p):
-
     lon = p.nodes.lon.value_in(units.deg).flatten()
     lat = p.nodes.lat.value_in(units.deg).flatten()
     pyplot.figure()
-    pyplot.plot(lon, lat, 'r+')
+    pyplot.plot(lon, lat, "r+")
 
     lon = p.elements.lon.value_in(units.deg).flatten()
     lat = p.elements.lat.value_in(units.deg).flatten()
-    pyplot.plot(lon, lat, 'g.')
+    pyplot.plot(lon, lat, "g.")
 
     pyplot.savefig("grid.png")
     pyplot.close()
@@ -227,7 +217,7 @@ def plot_surface_salinity(p, name="surface_salinity.eps"):
     y = p.elements3d.lat[0, :, 0]
 
     val = p.elements3d.salinity[:, :, 0]
-    mask = (p.nodes.depth.value_in(units.km) == 0)
+    mask = p.nodes.depth.value_in(units.km) == 0
     val = numpy.ma.array(val.value_in(units.psu), mask=mask)
 
     pyplot.figure()
@@ -242,7 +232,7 @@ def plot_surface_temperature(p, name="surface_temperature.eps"):
     y = p.elements3d.lat[0, :, 0]
 
     val = p.elements3d.temperature[:, :, 0]
-    mask = (p.nodes.depth.value_in(units.km) == 0)
+    mask = p.nodes.depth.value_in(units.km) == 0
     val = numpy.ma.array(val.value_in(units.Celsius), mask=mask)
 
     pyplot.figure()
@@ -259,17 +249,14 @@ def plot_streamplot(p, name="streamplot.eps"):
     u = p.nodes3d.xvel[:, :, 0]
     v = p.nodes3d.yvel[:, :, 0]
 
-    mask = (p.nodes.depth.value_in(units.km) == 0)
+    mask = p.nodes.depth.value_in(units.km) == 0
     u2 = numpy.ma.array(u.value_in(units.m / units.s), mask=mask)
 
     pyplot.figure()
-    pyplot.contourf(
-        x.value_in(units.deg), y.value_in(units.deg), u2.T
-    )
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), u2.T)
     pyplot.colorbar()
     pyplot.streamplot(
-        x.value_in(units.deg), y.value_in(units.deg),
-        u.T.value_in(units.m / units.s), v.T.value_in(units.m / units.s)
+        x.value_in(units.deg), y.value_in(units.deg), u.T.value_in(units.m / units.s), v.T.value_in(units.m / units.s)
     )
     pyplot.savefig(name)
     pyplot.close()
@@ -286,7 +273,7 @@ def barotropic_streamfunction(p):
 
     # Test for uniform cell size to make our life easier
     for i in range(1, len(y) - 1):
-        assert abs(y[i+1] - 2 * y[i] + y[i-1]) < 1e-12
+        assert abs(y[i + 1] - 2 * y[i] + y[i - 1]) < 1e-12
 
     dy = y[1] - y[0]
     dy *= constants.Rearth
@@ -298,7 +285,7 @@ def barotropic_streamfunction(p):
 def plot_barotropic_streamfunction(p, name="bstream.eps"):
     # psib = psib.value_in(units.Sv)[:, 1:]
     psib = barotropic_streamfunction(p)
-    mask = (p.nodes.depth.value_in(units.km) == 0)
+    mask = p.nodes.depth.value_in(units.km) == 0
     psib = numpy.ma.array(psib[:, 1:], mask=mask)
 
     x = p.nodes3d.lon[:, 0, 0]
@@ -322,7 +309,7 @@ def overturning_streamfunction(p):
 
     # Test for uniform cell size to make our life easier
     for i in range(1, len(x) - 1):
-        assert abs(x[i+1] - 2 * x[i] + x[i-1]) < 1e-12
+        assert abs(x[i + 1] - 2 * x[i] + x[i - 1]) < 1e-12
 
     dx = x[1] - x[0]
     dx *= numpy.cos(p.nodes3d[0, :, 0].lat.value_in(units.rad))
@@ -353,21 +340,14 @@ def save_pop_state(p, label, directory="./"):
 
     for d in p.data_store_names():
         # print(d,getattr(p, d))
-        write_set_to_file(getattr(p, d),
-                          os.path.join(directory, label + "_" + d + ".amuse"),
-                          "amuse",
-                          overwrite_file=True)
+        write_set_to_file(getattr(p, d), os.path.join(directory, label + "_" + d + ".amuse"), "amuse", overwrite_file=True)
 
 
 def reset_pop_state(p, label, snapdir="snapshots"):
-    nodes = read_set_from_file(os.path.join(snapdir, label + "_nodes.amuse"),
-                               "amuse")
-    nodes3d = read_set_from_file(
-        os.path.join(snapdir, label + "_nodes3d.amuse"), "amuse")
-    elements = read_set_from_file(
-        os.path.join(snapdir, label + "_elements.amuse"), "amuse")
-    elements3d = read_set_from_file(
-        os.path.join(snapdir, label + "_elements3d.amuse"), "amuse")
+    nodes = read_set_from_file(os.path.join(snapdir, label + "_nodes.amuse"), "amuse")
+    nodes3d = read_set_from_file(os.path.join(snapdir, label + "_nodes3d.amuse"), "amuse")
+    elements = read_set_from_file(os.path.join(snapdir, label + "_elements.amuse"), "amuse")
+    elements3d = read_set_from_file(os.path.join(snapdir, label + "_elements3d.amuse"), "amuse")
 
     channel1 = nodes.new_channel_to(p.nodes)
     # channel1.copy_attributes(["gradx","grady", "vx_barotropic", "vy_barotropic"])
@@ -384,21 +364,15 @@ def reset_pop_state(p, label, snapdir="snapshots"):
     channel1.copy_attributes(["ssh"])
 
 
-def long_evolve(p,
-                tend=100. | units.yr,
-                dt=100. | units.day,
-                dt2=1. | units.day,
-                i0=0,
-                snapdir="snapshots"):
-
+def long_evolve(p, tend=100.0 | units.yr, dt=100.0 | units.day, dt2=1.0 | units.day, i0=0, snapdir="snapshots"):
     tnow = p.model_time
     tend = tnow + tend
 
     t1 = time.time()
 
-    tdata = os.path.join(snapdir, 'tdata.txt')
-    with open(tdata, 'w') as f:
-        f.write('')
+    tdata = os.path.join(snapdir, "tdata.txt")
+    with open(tdata, "w") as f:
+        f.write("")
 
     i = i0
     while tnow < tend - dt / 2:
@@ -418,9 +392,9 @@ def long_evolve(p,
         psim_min = min(psim.flatten())
         psim_max = max(psim.flatten())
 
-        with open(tdata, 'a') as f:
+        with open(tdata, "a") as f:
             t = p.model_time.value_in(units.yr)
-            f.write('%.8e %.8e %.8e %.8e %.8e\n' % (t, psib_min, psib_max, psim_min, psim_max))
+            f.write("%.8e %.8e %.8e %.8e %.8e\n" % (t, psib_min, psib_max, psim_min, psim_max))
 
         label = label + ".1"
         p.evolve_model(tnow + dt2)
@@ -434,17 +408,11 @@ def long_evolve(p,
         else:
             eta = -1
 
-        print((t2 - t1) / 3600, "| evolve to", tnext.in_(units.yr),
-              " ETA (hr):", eta / 3600.)
+        print((t2 - t1) / 3600, "| evolve to", tnext.in_(units.yr), " ETA (hr):", eta / 3600.0)
         p.evolve_model(tnext)
 
 
-def long_restart(p,
-                 ibegin,
-                 tend=100. | units.yr,
-                 dt=100. | units.day,
-                 loaddir="snapshots",
-                 snapdir="snapshots"):
+def long_restart(p, ibegin, tend=100.0 | units.yr, dt=100.0 | units.day, loaddir="snapshots", snapdir="snapshots"):
     label = "state_{0:06}".format(ibegin)
     tsnap = ibegin * dt
     reset_pop_state(p, label, snapdir=loaddir)
@@ -452,7 +420,6 @@ def long_restart(p,
 
 
 def evolve_test(p, days=10):
-
     tend1 = days | units.day
     label1 = str(days)
 
@@ -485,7 +452,6 @@ def restart_test(label, tend):
 
 
 def compare(label1="201", label2="restart"):
-
     nodes1 = read_set_from_file(label1 + "_nodes.amuse", "amuse")
     nodes2 = read_set_from_file(label2 + "_nodes.amuse", "amuse")
 
