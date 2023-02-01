@@ -396,6 +396,10 @@ def long_evolve(p,
 
     t1 = time.time()
 
+    tdata = os.path.join(snapdir, 'tdata.txt')
+    with open(tdata, 'w') as f:
+        f.write('')
+
     i = i0
     while tnow < tend - dt / 2:
         tnow = p.model_time
@@ -404,6 +408,20 @@ def long_evolve(p,
         # save
         label = "state_{0:06}".format(i)
         save_pop_state(p, label, directory=snapdir)
+
+        psib = barotropic_streamfunction(p)
+        psim = overturning_streamfunction(p)
+
+        psib_min = min(psib.flatten())
+        psib_max = max(psib.flatten())
+
+        psim_min = min(psim.flatten())
+        psim_max = max(psim.flatten())
+
+        with open(tdata, 'a') as f:
+            t = p.model_time.value_in(units.yr)
+            f.write('%.8e %.8e %.8e %.8e %.8e\n' % (t, psib_min, psib_max, psim_min, psim_max))
+
         label = label + ".1"
         p.evolve_model(tnow + dt2)
         save_pop_state(p, label, directory=snapdir)
