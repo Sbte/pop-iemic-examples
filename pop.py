@@ -10,7 +10,7 @@ from omuse.units import units, constants
 
 from amuse.io import write_set_to_file, read_set_from_file
 
-from bstream import barotropic_streamfunction, overturning_streamfunction
+import bstream
 
 
 def simple_upscale(x, fx, fy):
@@ -172,15 +172,13 @@ def z_from_center(zc):
     return z[::direction]
 
 
-def plot_barotropic_streamfunction(p, name="bstream.eps"):
+def barotropic_streamfunction(p):
     u = p.nodes3d.xvel
-    mask = (p.nodes.depth.value_in(units.km) == 0)
 
     z = p.nodes3d.z[0, 0, :]
     z = z_from_center(z)
     dz = z[1:] - z[:-1]
 
-    x = p.nodes3d.lon[:, 0, 0]
     y = p.nodes3d.lat[0, :, 0]
 
     # Test for uniform cell size to make our life easier
@@ -190,9 +188,18 @@ def plot_barotropic_streamfunction(p, name="bstream.eps"):
     dy = y[1] - y[0]
     dy *= constants.Rearth
 
-    psib = barotropic_streamfunction(u, dz, dy)
+    psib = bstream.barotropic_streamfunction(u, dz, dy)
+    return psib.value_in(units.Sv)
+
+
+def plot_barotropic_streamfunction(p, name="bstream.eps"):
     # psib = psib.value_in(units.Sv)[:, 1:]
-    psib = numpy.ma.array(psib.value_in(units.Sv)[:, 1:], mask=mask)
+    psib = barotropic_streamfunction(p)
+    mask = (p.nodes.depth.value_in(units.km) == 0)
+    psib = numpy.ma.array(psib[:, 1:], mask=mask)
+
+    x = p.nodes3d.lon[:, 0, 0]
+    y = p.nodes3d.lat[0, :, 0]
 
     pyplot.figure()
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), psib.T)
