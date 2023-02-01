@@ -374,10 +374,10 @@ def get_grid_with_units(grid):
     # note pressure is pressure anomaly (ie difference from hydrostatic)
     def add_units_t(mask, pressure, salt, temp):
         # salt and temp need to account for mask
-        _salt = s0 * (mask == 0) + s_scale * salt
-        _temp = t0 * (mask == 0) + t_scale * temp
-        # _salt = s0 + s_scale * salt
-        # _temp = t0 + t_scale * temp
+        # _salt = s0 * (mask == 0) + s_scale * salt
+        # _temp = t0 * (mask == 0) + t_scale * temp
+        _salt = s0 + s_scale * salt
+        _temp = t0 + t_scale * temp
         _salt = quantities.as_vector_quantity(_salt)
         return (
             pscale * pressure,
