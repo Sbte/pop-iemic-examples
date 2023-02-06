@@ -105,16 +105,30 @@ def compute_depth_index(iemic_state):
     return levels, depth
 
 
+def initialize_pop(number_of_workers=8):
+    iemic_state = iemic.read_iemic_state_with_units("global_state")
+
+    levels, depth = compute_depth_index(iemic_state)
+
+    latmin = -85.5 | units.deg
+    latmax = 85.5 | units.deg
+    pop_interface = pop.initialize_pop(
+        levels, depth, mode="96x120x12", number_of_workers=number_of_workers, latmin=latmin, latmax=latmax
+    )
+
+    return pop_interface
+
+
 def initialize_pop_with_iemic_setup(number_of_workers=8):
     iemic_state = iemic.read_iemic_state_with_units("global_state")
 
-    iemic.plot_barotropic_streamfunction(iemic_state, "iemic_bstream.eps")
-    iemic.plot_u_velocity(iemic_state.v_grid, "iemic_u_velocity.eps")
-    iemic.plot_v_velocity(iemic_state.v_grid, "iemic_v_velocity.eps")
-    iemic.plot_surface_pressure(iemic_state.t_grid, "iemic_pressure.eps")
-    iemic.plot_surface_salinity(iemic_state.t_grid, "iemic_salinity.eps")
-    iemic.plot_surface_temperature(iemic_state.t_grid, "iemic_temperature.eps")
-    iemic.plot_streamplot(iemic_state, "iemic_streamplot.eps")
+    # iemic.plot_barotropic_streamfunction(iemic_state, "iemic_bstream.eps")
+    # iemic.plot_u_velocity(iemic_state.v_grid, "iemic_u_velocity.eps")
+    # iemic.plot_v_velocity(iemic_state.v_grid, "iemic_v_velocity.eps")
+    # iemic.plot_surface_pressure(iemic_state.t_grid, "iemic_pressure.eps")
+    # iemic.plot_surface_salinity(iemic_state.t_grid, "iemic_salinity.eps")
+    # iemic.plot_surface_temperature(iemic_state.t_grid, "iemic_temperature.eps")
+    # iemic.plot_streamplot(iemic_state, "iemic_streamplot.eps")
 
     levels, depth = compute_depth_index(iemic_state)
 
