@@ -15,3 +15,11 @@ def test_pop():
     os.chdir('tests')
     run(1)
     os.chdir('..')
+
+
+def test_pop_iemic_state():
+    from example_pop_iemic_state import run
+
+    os.chdir('tests')
+    run(1)
+    os.chdir('..')

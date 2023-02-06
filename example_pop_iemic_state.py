@@ -4,7 +4,7 @@ import pop_iemic
 import pop
 
 
-if __name__ == "__main__":
+def run(tend=10 | units.day):
     pop_instance = pop_iemic.initialize_pop_with_iemic_setup()
 
     # pop.plot_barotropic_streamfunction(pop_instance, "bstream-pop-iemic.eps")
@@ -41,3 +41,7 @@ if __name__ == "__main__":
     pop.plot_overturning_streamfunction(pop_instance, "mstream-pop-iemic-" + str(tend) + ".eps")
     pop.plot_salinity(pop_instance, "salinity-pop-iemic-" + str(tend) + ".eps")
     pop.plot_temperature(pop_instance, "temperature-pop-iemic-" + str(tend) + ".eps")
+
+
+if __name__ == "__main__":
+    run()
