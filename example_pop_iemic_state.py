@@ -160,8 +160,8 @@ if __name__ == "__main__":
 
     tend = 10
     pop.evolve_test(pop_interface, tend)
-    # long_evolve(pop_interface, tend=tend | units.yr, dt=100. | units.day)
-    # long_evolve(pop_interface, tend=tend | units.yr, dt=1000. | units.day)
+    # pop.long_evolve(pop_interface, tend=tend | units.yr, dt=100. | units.day)
+    # pop.long_evolve(pop_interface, tend=tend | units.yr, dt=1000. | units.day)
 
     pop.plot_ssh(pop_interface, "ssh_" + str(tend))
     pop.plot_sst(pop_interface, "sst_" + str(tend))
