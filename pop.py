@@ -370,6 +370,9 @@ def long_evolve(p, tend=100.0 | units.yr, dt=100.0 | units.day, dt2=1.0 | units.
 
     t1 = time.time()
 
+    if not os.path.exists(snapdir):
+        os.mkdir(snapdir)
+
     tdata = os.path.join(snapdir, "tdata.txt")
     with open(tdata, "w") as f:
         f.write("")
