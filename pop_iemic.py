@@ -116,6 +116,10 @@ def initialize_pop(number_of_workers=8):
         levels, depth, mode="96x120x12", number_of_workers=number_of_workers, latmin=latmin, latmax=latmax
     )
 
+    reset_pop_forcing_from_iemic_state(pop_instance, iemic_state)
+
+    pop.plot_forcings_and_depth(pop_instance)
+
     return pop_instance
 
 
