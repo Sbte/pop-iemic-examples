@@ -19,7 +19,7 @@ def simple_upscale(x, fx, fy):
     return numpy.kron(x, numpy.ones((fx, fy)))
 
 
-def reset_pop_state_from_iemic_state(pop_interface, iemic_state):
+def reset_pop_state_from_iemic_state(pop_instance, iemic_state):
 
     # quick fix
     v_state = iemic_state.v_grid[:, :, ::-1].copy()
@@ -29,25 +29,25 @@ def reset_pop_state_from_iemic_state(pop_interface, iemic_state):
     t_state.z = -t_state.z
 
     ssh = iemic.get_ssh(iemic_state)
-    channel1 = ssh.new_remapping_channel_to(pop_interface.elements, bilinear_2D_remapper)
+    channel1 = ssh.new_remapping_channel_to(pop_instance.elements, bilinear_2D_remapper)
     channel1.copy_attributes(["ssh"])
 
     barotropic_velocities = iemic.get_barotropic_velocities(iemic_state)
-    channel2 = barotropic_velocities.new_remapping_channel_to(pop_interface.nodes, bilinear_2D_remapper)
+    channel2 = barotropic_velocities.new_remapping_channel_to(pop_instance.nodes, bilinear_2D_remapper)
     channel2.copy_attributes(["uvel_barotropic", "vvel_barotropic"], target_names=["vx_barotropic", "vy_barotropic"])
 
-    channel3 = v_state.new_remapping_channel_to(pop_interface.nodes3d, bilinear_2D_remapper_3D)
+    channel3 = v_state.new_remapping_channel_to(pop_instance.nodes3d, bilinear_2D_remapper_3D)
     channel3.copy_attributes(["u_velocity", "v_velocity"], target_names=["xvel", "yvel"])
 
-    channel4 = t_state.new_remapping_channel_to(pop_interface.elements3d, bilinear_2D_remapper_3D)
+    channel4 = t_state.new_remapping_channel_to(pop_instance.elements3d, bilinear_2D_remapper_3D)
     channel4.copy_attributes(["salinity", "temperature"])
 
 
-def reset_pop_forcing_from_iemic_state(pop_interface, iemic_state):
-    channel = iemic_state.surface_v_grid.new_remapping_channel_to(pop_interface.forcings, bilinear_2D_remapper)
+def reset_pop_forcing_from_iemic_state(pop_instance, iemic_state):
+    channel = iemic_state.surface_v_grid.new_remapping_channel_to(pop_instance.forcings, bilinear_2D_remapper)
     channel.copy_attributes(["tau_x", "tau_y"], target_names=["tau_x", "tau_y"])
 
-    channel = iemic_state.surface_t_grid.new_remapping_channel_to(pop_interface.element_forcings, bilinear_2D_remapper)
+    channel = iemic_state.surface_t_grid.new_remapping_channel_to(pop_instance.element_forcings, bilinear_2D_remapper)
     channel.copy_attributes(["tatm", "emip"], target_names=["restoring_temp", "restoring_salt"])
 
 
@@ -77,7 +77,7 @@ def compute_depth_index(iemic_state):
 
     latmin = -85.5 | units.deg
     latmax = 85.5 | units.deg
-    pop_interface = pop.initialize_pop(levels, upscaled_depth, mode="96x120x12", latmin=latmin, latmax=latmax)
+    pop_instance = pop.initialize_pop(levels, upscaled_depth, mode="96x120x12", latmin=latmin, latmax=latmax)
 
     iemic_surface = iemic_state.t_grid[:, :, -1]
     source_depth = iemic_surface.empty_copy()
@@ -88,7 +88,7 @@ def compute_depth_index(iemic_state):
 
     depth = numpy.round(source_depth.depth_index)
 
-    pop_surface = pop_interface.elements
+    pop_surface = pop_instance.elements
     target_depth = pop_surface.empty_copy()
     channel = pop_surface.new_channel_to(target_depth)
     channel.copy_attributes(["lon", "lat"])
@@ -100,7 +100,7 @@ def compute_depth_index(iemic_state):
     depth[:, 0] = 0
     depth[:, -1] = 0
 
-    pop_interface.stop()
+    pop_instance.stop()
 
     return levels, depth
 
@@ -112,11 +112,11 @@ def initialize_pop(number_of_workers=8):
 
     latmin = -85.5 | units.deg
     latmax = 85.5 | units.deg
-    pop_interface = pop.initialize_pop(
+    pop_instance = pop.initialize_pop(
         levels, depth, mode="96x120x12", number_of_workers=number_of_workers, latmin=latmin, latmax=latmax
     )
 
-    return pop_interface
+    return pop_instance
 
 
 def initialize_pop_with_iemic_setup(number_of_workers=8):
@@ -134,21 +134,21 @@ def initialize_pop_with_iemic_setup(number_of_workers=8):
 
     latmin = -85.5 | units.deg
     latmax = 85.5 | units.deg
-    pop_interface = pop.initialize_pop(
+    pop_instance = pop.initialize_pop(
         levels, depth, mode="96x120x12", number_of_workers=number_of_workers, latmin=latmin, latmax=latmax
     )
 
-    reset_pop_forcing_from_iemic_state(pop_interface, iemic_state)
+    reset_pop_forcing_from_iemic_state(pop_instance, iemic_state)
 
-    pop.plot_forcings_and_depth(pop_interface)
+    pop.plot_forcings_and_depth(pop_instance)
 
     print("before reset")
 
-    reset_pop_state_from_iemic_state(pop_interface, iemic_state)
+    reset_pop_state_from_iemic_state(pop_instance, iemic_state)
 
     print("after reset")
 
-    pop_interface.parameters.reinit_gradp = True
-    pop_interface.parameters.reinit_rho = True
+    pop_instance.parameters.reinit_gradp = True
+    pop_instance.parameters.reinit_rho = True
 
-    return pop_interface
+    return pop_instance
