@@ -4,7 +4,7 @@ import pop_iemic
 import pop
 
 
-if __name__ == "__main__":
+def run(tend=10 | units.day):
     pop_instance = pop_iemic.initialize_pop()
 
     pop.plot_ssh(pop_instance)
@@ -17,7 +17,6 @@ if __name__ == "__main__":
     pop.plot_streamplot(pop_instance)
     pop.plot_forcings_and_depth(pop_instance)
 
-    tend = 10
     pop.evolve_test(pop_instance, tend)
     # pop.long_evolve(pop_instance, tend=tend | units.yr, dt=100. | units.day)
     # pop.long_evolve(pop_instance, tend=tend | units.yr, dt=1000. | units.day)
@@ -36,3 +35,7 @@ if __name__ == "__main__":
     pop.plot_overturning_streamfunction(pop_instance, "mstream-pop-" + str(tend) + ".eps")
     pop.plot_salinity(pop_instance, "salinity-pop-" + str(tend) + ".eps")
     pop.plot_temperature(pop_instance, "temperature-pop-" + str(tend) + ".eps")
+
+
+if __name__ == "__main__":
+    run()
