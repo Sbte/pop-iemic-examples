@@ -100,6 +100,8 @@ def compute_depth_index(iemic_state):
     depth[:, 0] = 0
     depth[:, -1] = 0
 
+    pop_interface.stop()
+
     return levels, depth
 
 
