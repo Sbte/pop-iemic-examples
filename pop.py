@@ -334,6 +334,40 @@ def plot_overturning_streamfunction(p, name="mstream.eps"):
     pyplot.close()
 
 
+def plot_tdata(directory='snapshots'):
+    with open(os.path.join(directory, 'tdata.txt')) as f:
+        t = []
+        psib_min = []
+        psib_max = []
+        psim_min = []
+        psim_max = []
+        for line in f.readlines():
+            data = line.split()
+            t.append(float(data[0]))
+            psib_min.append(float(data[1]))
+            psib_max.append(float(data[2]))
+            psim_min.append(float(data[3]))
+            psim_max.append(float(data[4]))
+
+    pyplot.plot(t, psib_min)
+    pyplot.plot(t, psib_max)
+    pyplot.title('Barotropic streamfunction')
+    pyplot.legend(('Psi min', 'Psi max'))
+    pyplot.xlabel('t (year)')
+    pyplot.ylabel('$ \\Psi $')
+    pyplot.savefig(os.path.join(directory, 'psib.eps'))
+    pyplot.close()
+
+    pyplot.plot(t, psim_min)
+    pyplot.plot(t, psim_max)
+    pyplot.title('Meridional streamfunction')
+    pyplot.legend(('Psi min', 'Psi max'))
+    pyplot.xlabel('t (year)')
+    pyplot.ylabel('$ \\Psi $')
+    pyplot.savefig(os.path.join(directory, 'psim.eps'))
+    pyplot.close()
+
+
 def save_pop_state(p, label, directory="./"):
     if not os.path.exists(directory):
         os.mkdir(directory)
