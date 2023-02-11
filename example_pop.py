@@ -4,7 +4,7 @@ import pop_iemic
 import pop
 
 
-def run(tend=10 | units.day):
+def run(tend=10 | units.day, dt=1 | units.day):
     pop_instance = pop_iemic.initialize_pop()
 
     pop.plot_ssh(pop_instance)
@@ -17,9 +17,9 @@ def run(tend=10 | units.day):
     pop.plot_streamplot(pop_instance)
     pop.plot_forcings_and_depth(pop_instance)
 
-    pop.evolve_test(pop_instance, tend)
-    # pop.long_evolve(pop_instance, tend=tend | units.yr, dt=100. | units.day)
-    # pop.long_evolve(pop_instance, tend=tend | units.yr, dt=1000. | units.day)
+    # dt = 1000 | units.day
+    # tend = 1000 | units.yr
+    pop.long_evolve(pop_instance, tend=tend, dt=dt)
 
     pop.plot_ssh(pop_instance, "ssh_" + str(tend))
     pop.plot_sst(pop_instance, "sst_" + str(tend))
