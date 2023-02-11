@@ -18,6 +18,14 @@ def test_pop():
     os.chdir('..')
 
 
+def test_restart_pop():
+    from example_restart_pop import run
+
+    os.chdir('tests')
+    run(1 | units.day)
+    os.chdir('..')
+
+
 def test_pop_iemic_state():
     from example_pop_iemic_state import run
 
