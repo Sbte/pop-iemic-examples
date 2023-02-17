@@ -334,8 +334,8 @@ def plot_overturning_streamfunction(p, name="mstream.eps"):
     pyplot.close()
 
 
-def plot_tdata(directory='snapshots'):
-    with open(os.path.join(directory, 'tdata.txt')) as f:
+def plot_tdata(directory='snapshots', fname='tdata.txt'):
+    with open(os.path.join(directory, fname)) as f:
         t = []
         psib_min = []
         psib_max = []
@@ -401,6 +401,7 @@ def reset_pop_state(p, label, snapdir="snapshots"):
 def long_evolve(p, tend=100.0 | units.yr, dt=100.0 | units.day, dt2=1.0 | units.day, i0=0, snapdir="snapshots"):
     tnow = p.model_time
     tend = tnow + tend
+    tstart = tnow
 
     t1 = time.time()
 
@@ -433,20 +434,17 @@ def long_evolve(p, tend=100.0 | units.yr, dt=100.0 | units.day, dt2=1.0 | units.
             t = p.model_time.value_in(units.yr)
             f.write("%.8e %.8e %.8e %.8e %.8e\n" % (t, psib_min, psib_max, psim_min, psim_max))
 
-        label = label + ".1"
         p.evolve_model(tnow + dt2)
-        save_pop_state(p, label, directory=snapdir)
-        i = i + 1
+
+        # label = label + ".1"
+        # save_pop_state(p, label, directory=snapdir)
 
         t2 = time.time()
-
-        if tnow > 0 * tnow:
-            eta = (tend - tnow) / (tnow / (t2 - t1))
-        else:
-            eta = -1
-
+        eta = (tend - tnow - dt2) / ((tnow + dt2 - tstart) / (t2 - t1))
         print((t2 - t1) / 3600, "| evolve to", tnext.in_(units.yr), " ETA (hr):", eta / 3600.0)
+
         p.evolve_model(tnext)
+        i = i + 1
 
 
 def long_restart(p, ibegin, tend=100.0 | units.yr, dt=100.0 | units.day, loaddir="snapshots", snapdir="snapshots"):
