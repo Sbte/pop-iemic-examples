@@ -24,26 +24,14 @@ def run(tend=10 | units.day, dt=1 | units.day):
 
     pop_instance = pop_iemic.initialize_pop()
 
-    pop.reset_pop_state(pop_instance, label, directory)
-
-    pop.plot_ssh(pop_instance)
-    pop.plot_sst(pop_instance)
-    pop.plot_velocity(pop_instance)
-    pop.plot_salinity(pop_instance)
-    pop.plot_temperature(pop_instance)
-    pop.plot_surface_salinity(pop_instance)
-    pop.plot_surface_temperature(pop_instance)
-    pop.plot_streamplot(pop_instance)
-    pop.plot_forcings_and_depth(pop_instance)
-
-    print('Running in ' + directory + ' with start label ' + label)
+    print('Loading from ' + directory + ' with start label ' + label)
 
     i0 = int(label[6:])
     snapdir = directory + '-2'
 
     # dt = 1000 | units.day
     # tend = 1000 | units.yr
-    pop.long_evolve(pop_instance, tend=tend, dt=dt, i0=i0, snapdir=snapdir)
+    pop.long_restart(pop_instance, i0, tend=tend, dt=dt, loaddir=directory, snapdir=snapdir)
 
     pop.plot_ssh(pop_instance, "ssh_" + str(tend))
     pop.plot_sst(pop_instance, "sst_" + str(tend))
