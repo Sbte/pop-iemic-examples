@@ -37,6 +37,7 @@ if __name__ == '__main__':
 
     pop.plot_barotropic_streamfunction(pop_instance, os.path.join(directory, "bstream.eps"))
     pop.plot_overturning_streamfunction(pop_instance, os.path.join(directory, "mstream.eps"))
+    pop.plot_amoc(pop_instance, os.path.join(directory, "amoc.eps"))
     pop.plot_salinity(pop_instance, os.path.join(directory, "salinity.eps"))
     pop.plot_temperature(pop_instance, os.path.join(directory, "temperature.eps"))
 
