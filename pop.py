@@ -1,4 +1,5 @@
 import os
+import shutil
 import numpy
 import time
 from matplotlib import pyplot
@@ -374,7 +375,9 @@ def save_pop_state(p, label, directory="./"):
 
     for d in p.data_store_names():
         # print(d,getattr(p, d))
-        write_set_to_file(getattr(p, d), os.path.join(directory, label + "_" + d + ".amuse"), "amuse", overwrite_file=True)
+        fname = os.path.join(directory, label + "_" + d + ".amuse")
+        write_set_to_file(getattr(p, d), fname, "amuse", overwrite_file=True)
+        shutil.copy(fname, os.path.join(directory, "latest_" + d + ".amuse"))
 
 
 def reset_pop_state(p, label, snapdir="snapshots"):

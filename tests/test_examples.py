@@ -25,6 +25,7 @@ def test_pop():
 
     assert os.path.isfile('snapshots/state_000000_nodes3d.amuse')
     assert os.path.isfile('snapshots/state_000001_nodes3d.amuse')
+    assert os.path.isfile('snapshots/latest_nodes3d.amuse')
     assert not os.path.isfile('snapshots/state_000002_nodes3d.amuse')
 
     os.chdir('..')
@@ -43,6 +44,7 @@ def test_restart_pop():
     assert not os.path.isfile('snapshots-2/state_000000_nodes3d.amuse')
     assert os.path.isfile('snapshots-2/state_000001_nodes3d.amuse')
     assert os.path.isfile('snapshots-2/state_000002_nodes3d.amuse')
+    assert os.path.isfile('snapshots-2/latest_nodes3d.amuse')
 
     shutil.rmtree('snapshots')
     shutil.rmtree('snapshots-2')
