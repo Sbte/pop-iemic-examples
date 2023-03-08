@@ -162,7 +162,7 @@ def initialize_pop_with_iemic_setup(number_of_workers=8):
     return pop_instance
 
 
-def plot_amoc(pop_instance, name="amoc.eps"):
+def amoc(pop_instance):
     try:
         iemic_state = iemic.read_iemic_state_with_units("amoc_state")
     except FileNotFoundError:
@@ -187,9 +187,6 @@ def plot_amoc(pop_instance, name="amoc.eps"):
     depth = pop_amoc_state.nodes.depth
     mask = depth.value_in(units.km) == 0
 
-    z = pop_amoc_state.nodes3d.z[0, 0, :]
-    z = pop.z_from_center(z)
-
     yvel = pop_instance.nodes3d.yvel.copy()
     for i in range(yvel.shape[0]):
         for j in range(yvel.shape[1]):
@@ -198,11 +195,20 @@ def plot_amoc(pop_instance, name="amoc.eps"):
 
     pop_amoc_state.nodes3d.yvel = yvel
 
-    psim = pop.overturning_streamfunction(pop_amoc_state)
+    return pop.overturning_streamfunction(pop_amoc_state)
+
+
+def plot_amoc(pop_instance, name="amoc.eps"):
+    psim = amoc(pop_instance)
+
+    pop_amoc_state = pop.read_pop_state("amoc_state")
 
     y = pop_instance.nodes3d.lat[0, :, 0]
     yi = [i for i, v in enumerate(y) if v.value_in(units.deg) > -30]
     y = y[yi]
+
+    z = pop_amoc_state.nodes3d.z[0, 0, :]
+    z = pop.z_from_center(z)
 
     val = psim[yi, :]
     mask = [numpy.max(pop_amoc_state.nodes.depth.value_in(units.km), axis=0) < zi for zi in z.value_in(units.km)]
