@@ -1,9 +1,12 @@
 import numpy
+from matplotlib import pyplot
 
+import bstream
 import iemic
 import pop
 
-from omuse.units import units
+from omuse.units import units, constants
+from amuse.io.base import IoException
 
 from amuse.ext.grid_remappers import bilinear_2D_remapper, nearest_2D_remapper
 
@@ -105,8 +108,9 @@ def compute_depth_index(iemic_state):
     return levels, depth
 
 
-def initialize_pop(number_of_workers=8):
-    iemic_state = iemic.read_iemic_state_with_units("global_state")
+def initialize_pop(number_of_workers=8, iemic_state=None):
+    if not iemic_state:
+        iemic_state = iemic.read_iemic_state_with_units("global_state")
 
     levels, depth = compute_depth_index(iemic_state)
 
@@ -171,12 +175,19 @@ def plot_amoc(pop_instance, name="amoc.eps"):
 
         iemic_state = iemic.read_iemic_state_with_units("amoc_state")
 
-    amoc_pop_instance = initialize_pop(iemic_state=iemic_state)
+    try:
+        pop_amoc_state = pop.read_pop_state("amoc_state")
+    except IoException:
+        amoc_pop_instance = initialize_pop(iemic_state=iemic_state)
+        pop.save_pop_state(amoc_pop_instance, "amoc_state")
+        amoc_pop_instance.stop()
 
-    depth = amoc_pop_instance.nodes.depth
+        pop_amoc_state = pop.read_pop_state("amoc_state")
+
+    depth = pop_amoc_state.nodes.depth
     mask = depth.value_in(units.km) == 0
 
-    z = amoc_pop_instance.nodes3d.z[0, 0, :]
+    z = pop_amoc_state.nodes3d.z[0, 0, :]
     z = pop.z_from_center(z)
 
     yvel = pop_instance.nodes3d.yvel.copy()
@@ -185,16 +196,16 @@ def plot_amoc(pop_instance, name="amoc.eps"):
             if mask[i, j]:
                 yvel[i, j, :] = 0 | units.m / units.s
 
-    amoc_pop_instance.nodes3d.yvel = yvel
+    pop_amoc_state.nodes3d.yvel = yvel
 
-    psim = pop.overturning_streamfunction(amoc_pop_instance)
+    psim = pop.overturning_streamfunction(pop_amoc_state)
 
     y = pop_instance.nodes3d.lat[0, :, 0]
     yi = [i for i, v in enumerate(y) if v.value_in(units.deg) > -30]
     y = y[yi]
 
     val = psim[yi, :]
-    mask = [numpy.max(amoc_pop_instance.nodes.depth.value_in(units.km), axis=0) < zi for zi in z.value_in(units.km)]
+    mask = [numpy.max(pop_amoc_state.nodes.depth.value_in(units.km), axis=0) < zi for zi in z.value_in(units.km)]
     mask = numpy.array(mask).T
     mask = mask[yi, :]
     val = numpy.ma.array(val, mask=mask)
