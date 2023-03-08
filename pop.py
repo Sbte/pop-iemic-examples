@@ -439,6 +439,32 @@ def reset_pop_state(p, label, snapdir="snapshots"):
     channel1.copy_attributes(["ssh"])
 
 
+def read_pop_state(label, directory="./"):
+    class FakePopInterface:
+        pass
+
+    p = FakePopInterface()
+    p.nodes3d = read_set_from_file(os.path.join(directory, label + "_nodes3d.amuse"), "amuse")
+    p.nodes3d.set_axes_names(["lon", "lat", "z"])
+
+    p.elements3d = read_set_from_file(os.path.join(directory, label + "_elements3d.amuse"), "amuse")
+    p.elements3d.set_axes_names(["lon", "lat", "z"])
+
+    p.nodes = read_set_from_file(os.path.join(directory, label + "_nodes.amuse"), "amuse")
+    p.nodes.set_axes_names(["lon", "lat"])
+
+    p.elements = read_set_from_file(os.path.join(directory, label + "_elements.amuse"), "amuse")
+    p.elements.set_axes_names(["lon", "lat"])
+
+    p.forcings = read_set_from_file(os.path.join(directory, label + "_forcings.amuse"), "amuse")
+    p.forcings.set_axes_names(["lon", "lat"])
+
+    p.element_forcings = read_set_from_file(os.path.join(directory, label + "_element_forcings.amuse"), "amuse")
+    p.element_forcings.set_axes_names(["lon", "lat"])
+
+    return p
+
+
 def long_evolve(p, tend=100.0 | units.yr, dt=100.0 | units.day, dt2=1.0 | units.day, i0=0, snapdir="snapshots"):
     tnow = p.model_time
     tend = tnow + tend
