@@ -326,43 +326,9 @@ def plot_overturning_streamfunction(p, name="mstream.eps"):
     z = p.nodes3d.z[0, 0, :]
     z = z_from_center(z)
 
-    y = p.nodes3d.lat[0, :, 0]
-
-    pyplot.figure()
-    pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), psim.T)
-    pyplot.colorbar()
-    pyplot.savefig(name)
-    pyplot.close()
-
-
-def amoc(p):
-    x = p.nodes3d.lon[:, 0, 0].value_in(units.deg)
-    xi = [i for i, j in enumerate(x) if j >= 300]
-    v = p.nodes3d.yvel[xi, :, :]
-
-    z = p.nodes3d.z[0, 0, :]
-    z = z_from_center(z)
-    dz = z[1:] - z[:-1]
-
-    x = p.nodes3d.lon[:, 0, 0]
-
-    # Test for uniform cell size to make our life easier
-    for i in range(1, len(x) - 1):
-        assert abs(x[i + 1] - 2 * x[i] + x[i - 1]) < 1e-12
-
-    dx = x[1] - x[0]
-    dx *= numpy.cos(p.nodes3d[0, :, 0].lat.value_in(units.rad))
-    dx *= constants.Rearth
-
-    psim = bstream.overturning_streamfunction(v, dz, dx)
-    return psim.value_in(units.Sv)
-
-
-def plot_amoc(p, name="amoc.eps"):
-    psim = amoc(p)
-
-    z = p.nodes3d.z[0, 0, :]
-    z = z_from_center(z)
+    mask = [numpy.max(p.nodes.depth.value_in(units.km), axis=0) < zi for zi in z.value_in(units.km)]
+    mask = numpy.array(mask).T
+    psim = numpy.ma.array(psim, mask=mask)
 
     y = p.nodes3d.lat[0, :, 0]
 
