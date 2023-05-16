@@ -54,7 +54,7 @@ def reset_pop_forcing_from_iemic_state(pop_instance, iemic_state):
     channel.copy_attributes(["tatm", "emip"], target_names=["restoring_temp", "restoring_salt"])
 
 
-def compute_depth_index(iemic_state):
+def compute_depth_index(iemic_state, number_of_workers=8):
     mask = iemic_state.t_grid.mask
 
     Nx = iemic_state.t_grid.shape[0]
