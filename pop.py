@@ -127,12 +127,12 @@ def evolve(p, tend=10 | units.day, dt=1.0 | units.day):
 
     while tnow < tend - dt / 2:
 
-        p.evolve_model(tnow + dt)
+        print('ret = ', p.evolve_model(tnow + dt), flush=True)
         tnow = p.model_time
 
         t = tnow.value_in(units.day)
         t = int(t)
-        print("evolve to", t)
+        print("evolve to", t, flush=True)
 
 
 def plot_sst(p, label="sst"):
@@ -483,14 +483,14 @@ def long_evolve(p, tend=100.0 | units.yr, dt=100.0 | units.day, dt2=1.0 | units.
             t = p.model_time.value_in(units.yr)
             f.write("%.8e %.8e %.8e %.8e %.8e\n" % (t, psib_min, psib_max, psim_min, psim_max))
 
-        p.evolve_model(tnow + dt2)
+        print(p.evolve_model(tnow + dt2), flush=True)
 
         # label = label + ".1"
         # save_pop_state(p, label, directory=snapdir)
 
         t2 = time.time()
         eta = (tend - tnow - dt2) / ((tnow + dt2 - tstart) / (t2 - t1))
-        print((t2 - t1) / 3600, "| evolve to", tnext.in_(units.yr), " ETA (hr):", eta / 3600.0)
+        print((t2 - t1) / 3600, "| evolve to", tnext.in_(units.yr), " ETA (hr):", eta / 3600.0, flush=True)
 
         p.evolve_model(tnext)
         i = i + 1
