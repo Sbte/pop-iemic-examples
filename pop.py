@@ -174,6 +174,8 @@ def plot_velocity(p, name="velocity.eps"):
     pyplot.figure()
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), s.T.value_in(units.m / units.s))
     pyplot.colorbar()
+    y = y.value_in(units.deg)
+    pyplot.xlim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
 
@@ -207,6 +209,8 @@ def plot_salinity(p, name="salinity.eps"):
     pyplot.figure()
     pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), val.T.value_in(units.psu))
     pyplot.colorbar()
+    y = y.value_in(units.deg)
+    pyplot.xlim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
 
@@ -225,6 +229,8 @@ def plot_temperature(p, name="temperature.eps"):
     pyplot.figure()
     pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), val.T.value_in(units.Celsius))
     pyplot.colorbar()
+    y = y.value_in(units.deg)
+    pyplot.xlim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
 
@@ -240,6 +246,8 @@ def plot_surface_salinity(p, name="surface_salinity.eps"):
     pyplot.figure()
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
     pyplot.colorbar()
+    y = y.value_in(units.deg)
+    pyplot.xlim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
 
@@ -255,6 +263,8 @@ def plot_surface_temperature(p, name="surface_temperature.eps"):
     pyplot.figure()
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
     pyplot.colorbar()
+    y = y.value_in(units.deg)
+    pyplot.xlim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
 
@@ -292,7 +302,7 @@ def barotropic_streamfunction(p):
     for i in range(1, len(y) - 1):
         assert abs(y[i + 1] - 2 * y[i] + y[i - 1]) < 1e-12
 
-    dy = y[1] - y[0]
+    dy = (y[1] - y[0]).value_in(units.rad)
     dy *= constants.Rearth
 
     psib = bstream.barotropic_streamfunction(u, dz, dy)
@@ -311,6 +321,8 @@ def plot_barotropic_streamfunction(p, name="bstream.eps"):
     pyplot.figure()
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), psib.T)
     pyplot.colorbar()
+    y = y.value_in(units.deg)
+    pyplot.ylim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
 
@@ -351,6 +363,8 @@ def plot_overturning_streamfunction(p, name="mstream.eps"):
     pyplot.figure()
     pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), psim.T)
     pyplot.colorbar()
+    y = y.value_in(units.deg)
+    pyplot.xlim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
 
