@@ -444,6 +444,8 @@ def read_pop_state(label, directory="./"):
     p.element_forcings = read_set_from_file(os.path.join(directory, label + "_element_forcings.amuse"), "amuse")
     p.element_forcings.set_axes_names(["lon", "lat"])
 
+    p.mode = 'x'.join((str(i) for i in p.nodes3d.xvel.shape))
+
     return p
 
 

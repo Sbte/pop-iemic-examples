@@ -159,25 +159,25 @@ def initialize_pop_with_iemic_setup(number_of_workers=8):
 
 def amoc(pop_instance):
     try:
-        iemic_state = iemic.read_iemic_state_with_units("amoc_state")
+        iemic_state = iemic.read_iemic_state_with_units("amoc_state_" + pop_instance.mode)
     except FileNotFoundError:
         iemic_instance = iemic.initialize_global_iemic()
         iemic_instance.parameters.Ocean__THCM__Land_Mask = "amoc_96x38x12.mask"
 
-        iemic.save_iemic_state(iemic_instance, "amoc_state")
+        iemic.save_iemic_state(iemic_instance, "amoc_state_" + pop_instance.mode)
 
         iemic_instance.stop()
 
-        iemic_state = iemic.read_iemic_state_with_units("amoc_state")
+        iemic_state = iemic.read_iemic_state_with_units("amoc_state_" + pop_instance.mode)
 
     try:
-        pop_amoc_state = pop.read_pop_state("amoc_state")
+        pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
     except IoException:
         amoc_pop_instance = initialize_pop(iemic_state=iemic_state)
-        pop.save_pop_state(amoc_pop_instance, "amoc_state")
+        pop.save_pop_state(amoc_pop_instance, "amoc_state_" + pop_instance.mode)
         amoc_pop_instance.stop()
 
-        pop_amoc_state = pop.read_pop_state("amoc_state")
+        pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
 
     depth = pop_amoc_state.nodes.depth
     mask = depth.value_in(units.km) == 0
@@ -190,13 +190,17 @@ def amoc(pop_instance):
 
     pop_amoc_state.nodes3d.yvel = yvel
 
-    return pop.overturning_streamfunction(pop_amoc_state)
+    y = pop_instance.nodes3d.lat[0, :, 0]
+    yi = [i for i, v in enumerate(y) if v.value_in(units.deg) > -30]
+
+    psim = pop.overturning_streamfunction(pop_amoc_state)
+    return psim[yi, :]
 
 
 def plot_amoc(pop_instance, name="amoc.eps"):
     psim = amoc(pop_instance)
 
-    pop_amoc_state = pop.read_pop_state("amoc_state")
+    pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
 
     y = pop_instance.nodes3d.lat[0, :, 0]
     yi = [i for i, v in enumerate(y) if v.value_in(units.deg) > -30]
@@ -205,11 +209,11 @@ def plot_amoc(pop_instance, name="amoc.eps"):
     z = pop_amoc_state.nodes3d.z[0, 0, :]
     z = pop.z_from_center(z)
 
-    val = psim[yi, :]
     mask = [numpy.max(pop_amoc_state.nodes.depth.value_in(units.km), axis=0) < zi for zi in z.value_in(units.km)]
     mask = numpy.array(mask).T
     mask = mask[yi, :]
-    val = numpy.ma.array(val, mask=mask)
+
+    val = numpy.ma.array(psim, mask=mask)
 
     pyplot.figure()
     pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), val.T)
