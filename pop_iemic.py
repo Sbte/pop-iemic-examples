@@ -78,9 +78,7 @@ def compute_depth_index(iemic_state, number_of_workers=8):
     # numpy.set_printoptions(threshold=sys.maxsize, linewidth=500)
     # print(upscaled_depth.astype(int))
 
-    latmin = -85.5 | units.deg
-    latmax = 85.5 | units.deg
-    pop_instance = pop.initialize_pop(levels, upscaled_depth, mode="96x120x12", latmin=latmin, latmax=latmax)
+    pop_instance = pop.initialize_pop(levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", latmin=pop.latmin, latmax=pop.latmax, number_of_workers=number_of_workers)
 
     iemic_surface = iemic_state.t_grid[:, :, -1]
     source_depth = iemic_surface.empty_copy()
@@ -114,10 +112,9 @@ def initialize_pop(number_of_workers=8, iemic_state=None):
 
     levels, depth = compute_depth_index(iemic_state)
 
-    latmin = -85.5 | units.deg
-    latmax = 85.5 | units.deg
+
     pop_instance = pop.initialize_pop(
-        levels, depth, mode="96x120x12", number_of_workers=number_of_workers, latmin=latmin, latmax=latmax
+        levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", number_of_workers=number_of_workers, latmin=pop.latmin, latmax=pop.latmax
     )
 
     reset_pop_forcing_from_iemic_state(pop_instance, iemic_state)
@@ -140,10 +137,8 @@ def initialize_pop_with_iemic_setup(number_of_workers=8):
 
     levels, depth = compute_depth_index(iemic_state)
 
-    latmin = -85.5 | units.deg
-    latmax = 85.5 | units.deg
     pop_instance = pop.initialize_pop(
-        levels, depth, mode="96x120x12", number_of_workers=number_of_workers, latmin=latmin, latmax=latmax
+        levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", number_of_workers=number_of_workers, latmin=pop.latmin, latmax=pop.latmax
     )
 
     reset_pop_forcing_from_iemic_state(pop_instance, iemic_state)

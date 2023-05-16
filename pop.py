@@ -14,6 +14,22 @@ from amuse.io import write_set_to_file, read_set_from_file
 import bstream
 
 
+Nx = 96
+Ny = 40
+latmin = -90.0 | units.deg
+latmax = 90.0 | units.deg
+
+# Nx = 96
+# Ny = 120
+# latmin = -85.5 | units.deg
+# latmax = 85.5 | units.deg
+
+# Nx = 192
+# Ny = 120
+# latmin = -85.5 | units.deg
+# latmax = 85.5 | units.deg
+
+
 def simple_upscale(x, fx, fy):
     # scale 2d x with integer factors
     return numpy.kron(x, numpy.ones((fx, fy)))
@@ -59,7 +75,7 @@ def plot_forcings_and_depth(p, label="pop"):
 
 
 def initialize_pop(
-    depth_levels, depth_array, mode="96x120x12", number_of_workers=4, latmin=-90 | units.deg, latmax=90 | units.deg
+    depth_levels, depth_array, mode=f"{Nx}x{Ny}x12", number_of_workers=4, latmin=-90 | units.deg, latmax=90 | units.deg
 ):
 
     print(f"initializing POP mode {mode} with {number_of_workers} workers")
