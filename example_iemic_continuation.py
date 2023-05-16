@@ -42,6 +42,19 @@ def run_continuation(target=1.0):
 
     instance.stop()
 
+    state = iemic.read_iemic_state_with_units('global_state')
+
+    iemic.plot_u_velocity(state)
+    iemic.plot_v_velocity(state)
+    iemic.plot_surface_pressure(state)
+    iemic.plot_surface_salinity(state)
+    iemic.plot_surface_temperature(state)
+    iemic.plot_salinity(state)
+    iemic.plot_temperature(state)
+    iemic.plot_streamplot(state)
+    iemic.plot_barotropic_streamfunction(state)
+    iemic.plot_overturning_streamfunction(state)
+
     print("done")
 
 

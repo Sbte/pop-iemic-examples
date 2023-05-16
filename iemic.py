@@ -515,11 +515,11 @@ def get_forcing_with_units(i, grid):
     return result
 
 
-def plot_u_velocity(grid, name="u_velocity.eps"):
-    x = grid.lon[:, 0, 0]
-    y = grid.lat[0, :, 0]
+def plot_u_velocity(state, name="u_velocity.eps"):
+    x = state.v_grid.lon[:, 0, 0]
+    y = state.v_grid.lat[0, :, 0]
 
-    u = grid.u_velocity[:, :, -1]
+    u = state.v_grid.u_velocity[:, :, -1]
 
     pyplot.figure()
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), u.T.value_in(units.m / units.s))
@@ -528,11 +528,11 @@ def plot_u_velocity(grid, name="u_velocity.eps"):
     pyplot.close()
 
 
-def plot_v_velocity(grid, name="v_velocity.eps"):
-    x = grid.lon[:, 0, 0]
-    y = grid.lat[0, :, 0]
+def plot_v_velocity(state, name="v_velocity.eps"):
+    x = state.v_grid.lon[:, 0, 0]
+    y = state.v_grid.lat[0, :, 0]
 
-    v = grid.v_velocity[:, :, -1]
+    v = state.v_grid.v_velocity[:, :, -1]
 
     pyplot.figure()
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), v.T.value_in(units.m / units.s))
@@ -541,26 +541,12 @@ def plot_v_velocity(grid, name="v_velocity.eps"):
     pyplot.close()
 
 
-def plot_surface_pressure(grid, name="surface_pressure.eps"):
-    x = grid.lon[:, 0, 0]
-    y = grid.lat[0, :, 0]
+def plot_surface_pressure(state, name="surface_pressure.eps"):
+    x = state.t_grid.lon[:, 0, 0]
+    y = state.t_grid.lat[0, :, 0]
 
-    val = grid.pressure[:, :, -1]
-    val = numpy.ma.array(val.value_in(units.Pa), mask=grid.mask[:, :, -1])
-
-    pyplot.figure()
-    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
-    pyplot.colorbar()
-    pyplot.savefig(name)
-    pyplot.close()
-
-
-def plot_surface_salinity(grid, name="surface_salinity.eps"):
-    x = grid.lon[:, 0, 0]
-    y = grid.lat[0, :, 0]
-
-    val = grid.salinity[:, :, -1]
-    val = numpy.ma.array(val.value_in(units.psu), mask=grid.mask[:, :, -1])
+    val = state.t_grid.pressure[:, :, -1]
+    val = numpy.ma.array(val.value_in(units.Pa), mask=state.t_grid.mask[:, :, -1])
 
     pyplot.figure()
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
@@ -569,12 +555,12 @@ def plot_surface_salinity(grid, name="surface_salinity.eps"):
     pyplot.close()
 
 
-def plot_surface_temperature(grid, name="surface_temperature.eps"):
-    x = grid.lon[:, 0, 0]
-    y = grid.lat[0, :, 0]
+def plot_surface_salinity(state, name="surface_salinity.eps"):
+    x = state.t_grid.lon[:, 0, 0]
+    y = state.t_grid.lat[0, :, 0]
 
-    val = grid.temperature[:, :, -1]
-    val = numpy.ma.array(val.value_in(units.Celsius), mask=grid.mask[:, :, -1])
+    val = state.t_grid.salinity[:, :, -1]
+    val = numpy.ma.array(val.value_in(units.psu), mask=state.t_grid.mask[:, :, -1])
 
     pyplot.figure()
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
@@ -583,15 +569,29 @@ def plot_surface_temperature(grid, name="surface_temperature.eps"):
     pyplot.close()
 
 
-def plot_salinity(grid, name="salinity.eps"):
-    z = grid.z[0, 0, :]
-    y = grid.lat[0, :, 0]
+def plot_surface_temperature(state, name="surface_temperature.eps"):
+    x = state.t_grid.lon[:, 0, 0]
+    y = state.t_grid.lat[0, :, 0]
 
-    s = grid.salinity[0, :, :]
-    for i in range(1, grid.salinity.shape[0]):
-        s += grid.salinity[i, :, :]
+    val = state.t_grid.temperature[:, :, -1]
+    val = numpy.ma.array(val.value_in(units.Celsius), mask=state.t_grid.mask[:, :, -1])
 
-    s = s / grid.salinity.shape[0]
+    pyplot.figure()
+    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
+    pyplot.colorbar()
+    pyplot.savefig(name)
+    pyplot.close()
+
+
+def plot_salinity(state, name="salinity.eps"):
+    z = state.t_grid.z[0, 0, :]
+    y = state.t_grid.lat[0, :, 0]
+
+    s = state.t_grid.salinity[0, :, :]
+    for i in range(1, state.t_grid.salinity.shape[0]):
+        s += state.t_grid.salinity[i, :, :]
+
+    s = s / state.t_grid.salinity.shape[0]
     s = quantities.as_vector_quantity(s)
 
     pyplot.figure()
@@ -601,15 +601,15 @@ def plot_salinity(grid, name="salinity.eps"):
     pyplot.close()
 
 
-def plot_temperature(grid, name="temperature.eps"):
-    z = grid.z[0, 0, :]
-    y = grid.lat[0, :, 0]
+def plot_temperature(state, name="temperature.eps"):
+    z = state.t_grid.z[0, 0, :]
+    y = state.t_grid.lat[0, :, 0]
 
-    t = grid.temperature[0, :, :]
-    for i in range(1, grid.temperature.shape[0]):
-        t += grid.temperature[i, :, :]
+    t = state.t_grid.temperature[0, :, :]
+    for i in range(1, state.t_grid.temperature.shape[0]):
+        t += state.t_grid.temperature[i, :, :]
 
-    t = t / grid.temperature.shape[0]
+    t = t / state.t_grid.temperature.shape[0]
 
     pyplot.figure()
     pyplot.contourf(y.value_in(units.deg), z.value_in(units.m), t.T.value_in(units.Celsius))
@@ -654,7 +654,7 @@ def plot_barotropic_streamfunction(state, name="bstream.eps"):
     for i in range(1, len(y) - 1):
         assert abs(y[i + 1] - 2 * y[i] + y[i - 1]) < 1e-12
 
-    dy = y[1] - y[0]
+    dy = (y[1] - y[0]).value_in(units.rad)
     dy *= constants.Rearth
 
     psib = barotropic_streamfunction(u, dz, dy)
@@ -667,22 +667,22 @@ def plot_barotropic_streamfunction(state, name="bstream.eps"):
     pyplot.close()
 
 
-def plot_overturning_streamfunction(grid, name="mstream.eps"):
-    v = grid.v_velocity
+def plot_overturning_streamfunction(state, name="mstream.eps"):
+    v = state.v_grid.v_velocity
 
-    z = grid.z[0, 0, :]
+    z = state.v_grid.z[0, 0, :]
     z = z_from_center(z)
     dz = z[1:] - z[:-1]
 
-    x = grid.lon[:, 0, 0]
-    y = grid.lat[0, :, 0]
+    x = state.v_grid.lon[:, 0, 0]
+    y = state.v_grid.lat[0, :, 0]
 
     # Test for uniform cell size to make our life easier
     for i in range(1, len(x) - 1):
         assert abs(x[i + 1] - 2 * x[i] + x[i - 1]) < 1e-12
 
     dx = x[1] - x[0]
-    dx *= numpy.cos(grid.lat.value_in(units.rad)[0, :, 0])
+    dx *= numpy.cos(state.v_grid.lat.value_in(units.rad)[0, :, 0])
     dx *= constants.Rearth
 
     psim = overturning_streamfunction(v, dz, dx)
