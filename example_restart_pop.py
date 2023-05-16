@@ -7,20 +7,20 @@ import pop_iemic
 import pop
 
 
-def run(tend=10 | units.day, dt=1 | units.day):
-    if len(sys.argv) < 2:
+def run(tend=10 | units.day, dt=1 | units.day, argv=[]):
+    if len(argv) < 2:
         directory = 'snapshots'
     else:
-        directory = sys.argv[1]
+        directory = argv[1]
 
-    if len(sys.argv) < 3:
+    if len(argv) < 3:
         files = sorted(os.listdir(directory), reverse=True)
         for f in files:
             if f.startswith('state_'):
                 label = f[:12]
                 break
     else:
-        label = "state_{0:06}".format(sys.argv[2])
+        label = "state_{0:06}".format(argv[2])
 
     pop_instance = pop_iemic.initialize_pop()
 
@@ -50,4 +50,4 @@ def run(tend=10 | units.day, dt=1 | units.day):
 
 
 if __name__ == '__main__':
-    run()
+    run(argv=sys.argv)
