@@ -667,7 +667,7 @@ def plot_barotropic_streamfunction(state, name="bstream.eps"):
     pyplot.close()
 
 
-def plot_overturning_streamfunction(state, name="mstream.eps"):
+def overturning_streamfunction(state):
     v = state.v_grid.v_velocity
 
     z = state.v_grid.z[0, 0, :]
@@ -675,7 +675,6 @@ def plot_overturning_streamfunction(state, name="mstream.eps"):
     dz = z[1:] - z[:-1]
 
     x = state.v_grid.lon[:, 0, 0]
-    y = state.v_grid.lat[0, :, 0]
 
     # Test for uniform cell size to make our life easier
     for i in range(1, len(x) - 1):
@@ -685,8 +684,17 @@ def plot_overturning_streamfunction(state, name="mstream.eps"):
     dx *= numpy.cos(state.v_grid.lat.value_in(units.rad)[0, :, 0])
     dx *= constants.Rearth
 
-    psim = overturning_streamfunction(v, dz, dx)
-    psim = psim.value_in(units.Sv)
+    psim = bstream.overturning_streamfunction(v, dz, dx)
+    return psim.value_in(units.Sv)
+
+
+def plot_overturning_streamfunction(state, name="mstream.eps"):
+    psim = overturning_streamfunction(state)
+
+    z = state.v_grid.z[0, 0, :]
+    z = z_from_center(z)
+
+    y = state.v_grid.lat[0, :, 0]
 
     pyplot.figure()
     pyplot.contourf(y.value_in(units.deg), z.value_in(units.m), psim.T)
