@@ -640,14 +640,13 @@ def plot_streamplot(state, name="streamplot.eps"):
     pyplot.close()
 
 
-def plot_barotropic_streamfunction(state, name="bstream.eps"):
+def barotropic_streamfunction(state):
     u = state.v_grid.u_velocity
 
     z = state.v_grid.z[0, 0, :]
     z = z_from_center(z)
     dz = z[1:] - z[:-1]
 
-    x = state.v_grid.lon[:, 0, 0]
     y = state.v_grid.lat[0, :, 0]
 
     # Test for uniform cell size to make our life easier
@@ -657,8 +656,16 @@ def plot_barotropic_streamfunction(state, name="bstream.eps"):
     dy = (y[1] - y[0]).value_in(units.rad)
     dy *= constants.Rearth
 
-    psib = barotropic_streamfunction(u, dz, dy)
-    psib = numpy.ma.array(psib.value_in(units.Sv)[:, 1:], mask=state.t_grid.mask[:, :, -1])
+    psib = bstream.barotropic_streamfunction(u, dz, dy)
+    return psib.value_in(units.Sv)
+
+
+def plot_barotropic_streamfunction(state, name="bstream.eps"):
+    psib = barotropic_streamfunction(state)
+    psib = numpy.ma.array(psib[:, 1:], mask=state.t_grid.mask[:, :, -1])
+
+    x = state.v_grid.lon[:, 0, 0]
+    y = state.v_grid.lat[0, :, 0]
 
     pyplot.figure()
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), psib.T)
