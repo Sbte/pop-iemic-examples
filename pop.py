@@ -79,10 +79,7 @@ def plot_forcings_and_depth(p, label="pop"):
     pyplot.close()
 
 
-def initialize_pop(
-    depth_levels, depth_array, mode=f"{Nx}x{Ny}x12", number_of_workers=4, latmin=-90 | units.deg, latmax=90 | units.deg
-):
-
+def initialize_pop(depth_levels, depth_array, mode=f"{Nx}x{Ny}x12", number_of_workers=6, latmin=latmin, latmax=latmax):
     print(f"initializing POP mode {mode} with {number_of_workers} workers")
 
     p = POP(
@@ -132,7 +129,7 @@ def evolve(p, tend=10 | units.day, dt=1.0 | units.day):
 
     while tnow < tend - dt / 2:
 
-        print('ret = ', p.evolve_model(tnow + dt), flush=True)
+        print("ret = ", p.evolve_model(tnow + dt), flush=True)
         tnow = p.model_time
 
         t = tnow.value_in(units.day)
@@ -391,20 +388,20 @@ def plot_tdata(directory="snapshots", fname="tdata.txt"):
 
     pyplot.plot(t, psib_min)
     pyplot.plot(t, psib_max)
-    pyplot.title('Barotropic streamfunction')
-    pyplot.legend(('Psi min', 'Psi max'))
-    pyplot.xlabel('t (year)')
-    pyplot.ylabel('$ \\Psi $')
-    pyplot.savefig(os.path.join(directory, 'psib.eps'))
+    pyplot.title("Barotropic streamfunction")
+    pyplot.legend(("Psi min", "Psi max"))
+    pyplot.xlabel("t (year)")
+    pyplot.ylabel("$ \\Psi $")
+    pyplot.savefig(os.path.join(directory, "psib.eps"))
     pyplot.close()
 
     pyplot.plot(t, psim_min)
     pyplot.plot(t, psim_max)
-    pyplot.title('Meridional streamfunction')
-    pyplot.legend(('Psi min', 'Psi max'))
-    pyplot.xlabel('t (year)')
-    pyplot.ylabel('$ \\Psi $')
-    pyplot.savefig(os.path.join(directory, 'psim.eps'))
+    pyplot.title("Meridional streamfunction")
+    pyplot.legend(("Psi min", "Psi max"))
+    pyplot.xlabel("t (year)")
+    pyplot.ylabel("$ \\Psi $")
+    pyplot.savefig(os.path.join(directory, "psim.eps"))
     pyplot.close()
 
 
@@ -463,7 +460,7 @@ def read_pop_state(label, directory="./"):
     p.element_forcings = read_set_from_file(os.path.join(directory, label + "_element_forcings.amuse"), "amuse")
     p.element_forcings.set_axes_names(["lon", "lat"])
 
-    p.mode = 'x'.join((str(i) for i in p.nodes3d.xvel.shape))
+    p.mode = "x".join((str(i) for i in p.nodes3d.xvel.shape))
 
     return p
 

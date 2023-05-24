@@ -1,11 +1,10 @@
 import numpy
 from matplotlib import pyplot
 
-import bstream
 import iemic
 import pop
 
-from omuse.units import units, constants
+from omuse.units import units
 from amuse.io.base import IoException
 
 from amuse.ext.grid_remappers import bilinear_2D_remapper, nearest_2D_remapper
@@ -54,12 +53,10 @@ def reset_pop_forcing_from_iemic_state(pop_instance, iemic_state):
     channel.copy_attributes(["tatm", "emip"], target_names=["restoring_temp", "restoring_salt"])
 
 
-def compute_depth_index(iemic_state, number_of_workers=8):
+def compute_depth_index(iemic_state, number_of_workers=6):
     mask = iemic_state.t_grid.mask
 
-    Nx = iemic_state.t_grid.shape[0]
-    Ny = iemic_state.t_grid.shape[1] + 2
-    depth = numpy.zeros((Nx, Ny))
+    depth = numpy.zeros((pop.Nx, pop.Ny))
     depth[:, 1:-1] = iemic.depth_array_from_mask(mask)  # convert to (index) depth array
 
     # levels = depth_levels(Nz + 1, stretch_factor=stretch_factor) * Hdim
@@ -70,7 +67,7 @@ def compute_depth_index(iemic_state, number_of_workers=8):
     levels[1:] = -z[::-1]
 
     # no interpolation for bathymetry
-    upscaled_depth = simple_upscale(depth, 1, 3)
+    # upscaled_depth = simple_upscale(depth, 1, 3)
 
     # return levels, upscaled_depth
 
@@ -78,7 +75,9 @@ def compute_depth_index(iemic_state, number_of_workers=8):
     # numpy.set_printoptions(threshold=sys.maxsize, linewidth=500)
     # print(upscaled_depth.astype(int))
 
-    pop_instance = pop.initialize_pop(levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", latmin=pop.latmin, latmax=pop.latmax, number_of_workers=number_of_workers)
+    pop_instance = pop.initialize_pop(
+        levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", latmin=pop.latmin, latmax=pop.latmax, number_of_workers=number_of_workers
+    )
 
     iemic_surface = iemic_state.t_grid[:, :, -1]
     source_depth = iemic_surface.empty_copy()
@@ -106,7 +105,7 @@ def compute_depth_index(iemic_state, number_of_workers=8):
     return levels, depth
 
 
-def initialize_pop(number_of_workers=8, iemic_state=None):
+def initialize_pop(number_of_workers=6, iemic_state=None):
     if not iemic_state:
         iemic_state = iemic.read_iemic_state_with_units("idealized_120x54x12")
 
