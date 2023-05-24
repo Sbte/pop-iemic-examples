@@ -5,7 +5,7 @@ import pop
 
 
 def run(tend=10 | units.day):
-    pop_instance = pop_iemic.initialize_pop_with_iemic_setup()
+    pop_instance = pop_iemic.initialize_pop_with_iemic_setup(6)
 
     # pop.plot_barotropic_streamfunction(pop_instance, "bstream-pop-iemic.eps")
     # pop.plot_overturning_streamfunction(pop_instance, "mstream-pop-iemic.eps")
@@ -22,8 +22,7 @@ def run(tend=10 | units.day):
     pop.plot_streamplot(pop_instance)
     pop.plot_forcings_and_depth(pop_instance)
 
-    tend = 10
-    pop.evolve_test(pop_instance, tend)
+    pop.evolve_test(pop_instance, tend.value_in(units.day))
     # pop.long_evolve(pop_instance, tend=tend | units.yr, dt=100. | units.day)
     # pop.long_evolve(pop_instance, tend=tend | units.yr, dt=1000. | units.day)
 
