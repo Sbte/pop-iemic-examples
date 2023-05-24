@@ -5,6 +5,7 @@
 import xml.etree.ElementTree as xml
 import numpy
 import os
+import shutil
 
 from matplotlib import pyplot
 
@@ -271,14 +272,18 @@ def save_iemic_state(i, label, directory="./"):
         os.mkdir(directory)
 
     for d in i.data_store_names():
+        fname = os.path.join(directory, label + "_" + d + ".amuse")
         write_set_to_file(
             getattr(i, d),
-            os.path.join(directory, label + "_" + d + ".amuse"),
+            fname,
             "amuse",
             overwrite_file=True,
         )
+        shutil.copy(fname, os.path.join(directory, "latest_" + d + ".amuse"))
 
-    i.save_xml_parameters("Ocean", os.path.join(directory, label + "_parameters.xml"))
+    fname = os.path.join(directory, label + "_parameters.xml")
+    i.save_xml_parameters("Ocean", fname)
+    shutil.copy(fname, os.path.join(directory, "latest_parameters.xml"))
 
 
 def load_iemic_state(i, label, directory="./", copy_forcing=False):
