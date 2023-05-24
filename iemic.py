@@ -13,7 +13,7 @@ from omuse.units import units, constants, quantities
 
 from omuse.community.iemic.interface import iemic
 
-from bstream import barotropic_streamfunction, overturning_streamfunction
+import bstream
 
 from fvm import Continuation
 
@@ -196,22 +196,22 @@ def initialize_global_iemic(number_of_workers=1, redirection="none"):
 
     i.parameters.Ocean__THCM__Global_Bound_xmin = 0
     i.parameters.Ocean__THCM__Global_Bound_xmax = 360
-    i.parameters.Ocean__THCM__Global_Bound_ymin = -85.5
-    i.parameters.Ocean__THCM__Global_Bound_ymax = 85.5
+    i.parameters.Ocean__THCM__Global_Bound_ymin = -81
+    i.parameters.Ocean__THCM__Global_Bound_ymax = 81
 
     i.parameters.Ocean__THCM__Periodic = True
-    i.parameters.Ocean__THCM__Global_Grid_Size_n = 96
-    i.parameters.Ocean__THCM__Global_Grid_Size_m = 38
+    i.parameters.Ocean__THCM__Global_Grid_Size_n = 120
+    i.parameters.Ocean__THCM__Global_Grid_Size_m = 54
     i.parameters.Ocean__THCM__Global_Grid_Size_l = 12
 
-    i.parameters.Ocean__THCM__Grid_Stretching_qz = 2.25
+    i.parameters.Ocean__THCM__Grid_Stretching_qz = 1.8
     i.parameters.Ocean__THCM__Depth_hdim = 5000.0
 
     i.parameters.Ocean__THCM__Topography = 0
     i.parameters.Ocean__THCM__Flat_Bottom = False
 
     i.parameters.Ocean__THCM__Read_Land_Mask = True
-    i.parameters.Ocean__THCM__Land_Mask = "global_96x38x12.mask"
+    i.parameters.Ocean__THCM__Land_Mask = "global_120x54x12.mask"
 
     i.parameters.Ocean__THCM__Rho_Mixing = False
 
@@ -220,6 +220,15 @@ def initialize_global_iemic(number_of_workers=1, redirection="none"):
     i.parameters.Ocean__THCM__Starting_Parameters__Solar_Forcing = 0.0
     i.parameters.Ocean__THCM__Starting_Parameters__Temperature_Forcing = 10.0
     i.parameters.Ocean__THCM__Starting_Parameters__Wind_Forcing = 1.0
+
+    # Parameters for Levitus
+    # i.parameters.Ocean__THCM__Levitus_S = 0
+    # i.parameters.Ocean__THCM__Levitus_T = 0
+    # i.parameters.Ocean__THCM__Wind_Forcing_Type = 0
+    # i.parameters.Ocean__THCM__Starting_Parameters__Temperature_Forcing = 1.0
+
+    # Set salinity to 0.1 first, do a continuation to 1 later.
+    # i.parameters.Ocean__THCM__Starting_Parameters__Salinity_Forcing = 0.1
 
     i.parameters.Ocean__Analyze_Jacobian = True
 

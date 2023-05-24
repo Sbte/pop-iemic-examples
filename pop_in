@@ -146,11 +146,11 @@
 /
 
 &vertical_mix_nml
-   vmix_choice = 'const'
+   vmix_choice = 'kpp'
    aidif       = 1.0
    bottom_drag = 1.0e-3
-   implicit_vertical_mix = .false.
-   convection_type = 'adjustment'
+   implicit_vertical_mix = .true.
+   convection_type = 'diffusion'
    nconvad = 2
    convect_diff = 1000.0
    convect_visc = 1000.0
@@ -159,8 +159,8 @@
 /
 
 &vmix_const_nml
-   const_vvc   = 10.
-   const_vdc   = 1.
+   const_vvc   = 0.25
+   const_vdc   = 0.25
 /
 
 &vmix_rich_nml
@@ -188,8 +188,8 @@
 /
 
 &hmix_nml
-   hmix_momentum_choice = 'del2' 
-   hmix_tracer_choice   = 'del2' 
+   hmix_momentum_choice = 'anis' 
+   hmix_tracer_choice   = 'gent' 
 /
 
 &hmix_del2u_nml

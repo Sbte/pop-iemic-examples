@@ -14,15 +14,20 @@ from amuse.io import write_set_to_file, read_set_from_file
 import bstream
 
 
-Nx = 96
-Ny = 40
-latmin = -90.0 | units.deg
-latmax = 90.0 | units.deg
+# Nx = 96
+# Ny = 40
+# latmin = -90.0 | units.deg
+# latmax = 90.0 | units.deg
 
 # Nx = 96
 # Ny = 120
 # latmin = -85.5 | units.deg
 # latmax = 85.5 | units.deg
+
+Nx = 120
+Ny = 56
+latmin = -84 | units.deg
+latmax = 84 | units.deg
 
 # Nx = 192
 # Ny = 120

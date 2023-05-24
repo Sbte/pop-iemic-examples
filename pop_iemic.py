@@ -108,10 +108,9 @@ def compute_depth_index(iemic_state, number_of_workers=8):
 
 def initialize_pop(number_of_workers=8, iemic_state=None):
     if not iemic_state:
-        iemic_state = iemic.read_iemic_state_with_units("global_state")
+        iemic_state = iemic.read_iemic_state_with_units("idealized_120x54x12")
 
     levels, depth = compute_depth_index(iemic_state)
-
 
     pop_instance = pop.initialize_pop(
         levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", number_of_workers=number_of_workers, latmin=pop.latmin, latmax=pop.latmax
@@ -124,8 +123,8 @@ def initialize_pop(number_of_workers=8, iemic_state=None):
     return pop_instance
 
 
-def initialize_pop_with_iemic_setup(number_of_workers=8):
-    iemic_state = iemic.read_iemic_state_with_units("global_state")
+def initialize_pop_with_iemic_setup(number_of_workers=6):
+    iemic_state = iemic.read_iemic_state_with_units("idealized_120x54x12")
 
     # iemic.plot_barotropic_streamfunction(iemic_state, "iemic_bstream.eps")
     # iemic.plot_u_velocity(iemic_state.v_grid, "iemic_u_velocity.eps")
@@ -162,7 +161,12 @@ def amoc(pop_instance):
         iemic_state = iemic.read_iemic_state_with_units("amoc_state_" + pop_instance.mode)
     except FileNotFoundError:
         iemic_instance = iemic.initialize_global_iemic()
-        iemic_instance.parameters.Ocean__THCM__Land_Mask = "amoc_96x38x12.mask"
+
+        Nx = iemic_instance.parameters.Ocean__THCM__Global_Grid_Size_n
+        Ny = iemic_instance.parameters.Ocean__THCM__Global_Grid_Size_m
+        Nz = iemic_instance.parameters.Ocean__THCM__Global_Grid_Size_l
+
+        iemic_instance.parameters.Ocean__THCM__Land_Mask = f"amoc_{Nx}x{Ny}x{Nz}.mask"
 
         iemic.save_iemic_state(iemic_instance, "amoc_state_" + pop_instance.mode)
 
