@@ -288,14 +288,10 @@ def save_iemic_state(i, label, directory="./"):
 
 def load_iemic_state(i, label, directory="./", copy_forcing=False):
     v_grid = read_set_from_file(os.path.join(directory, label + "_v_grid.amuse"), "amuse")
-    w_grid = read_set_from_file(os.path.join(directory, label + "_w_grid.amuse"), "amuse")
     t_grid = read_set_from_file(os.path.join(directory, label + "_t_grid.amuse"), "amuse")
 
     channel = v_grid.new_channel_to(i.v_grid)
     channel.copy_attributes(["u_velocity", "v_velocity"])
-
-    channel = w_grid.new_channel_to(i.w_grid)
-    channel.copy_attributes(["w_velocity"])
 
     channel = t_grid.new_channel_to(i.t_grid)
     channel.copy_attributes(["pressure", "temperature", "salinity"])
@@ -341,10 +337,6 @@ def read_iemic_state_with_units(label, directory="./"):
     i.v_grid = read_set_from_file(os.path.join(directory, label + "_v_grid.amuse"), "amuse")
     i.v_grid = get_grid_with_units(i.v_grid)
     i.v_grid.set_axes_names(["lon", "lat", "z"])
-
-    i.w_grid = read_set_from_file(os.path.join(directory, label + "_w_grid.amuse"), "amuse")
-    i.w_grid = get_grid_with_units(i.w_grid)
-    i.w_grid.set_axes_names(["lon", "lat", "z"])
 
     i.t_grid = read_set_from_file(os.path.join(directory, label + "_t_grid.amuse"), "amuse")
     i.t_grid = get_grid_with_units(i.t_grid)

@@ -62,9 +62,9 @@ def compute_depth_index(iemic_state, number_of_workers=6):
     # levels = depth_levels(Nz + 1, stretch_factor=stretch_factor) * Hdim
 
     # We get the levels directly instead because of the way i-emic calculates them
-    z = iemic_state.w_grid.z[0, 0, :]
-    levels = numpy.zeros(len(z) + 1) * z[0]
-    levels[1:] = -z[::-1]
+    z = iemic_state.v_grid.z[0, 0, :]
+    z = iemic.z_from_center(z)
+    levels = -z[::-1]
 
     # no interpolation for bathymetry
     # upscaled_depth = simple_upscale(depth, 1, 3)
