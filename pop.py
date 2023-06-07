@@ -177,7 +177,7 @@ def plot_velocity(p, name="velocity.eps"):
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), s.T.value_in(units.m / units.s))
     pyplot.colorbar()
     y = y.value_in(units.deg)
-    pyplot.xlim(y[1], y[-2])
+    pyplot.ylim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
 
@@ -249,7 +249,7 @@ def plot_surface_salinity(p, name="surface_salinity.eps"):
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
     pyplot.colorbar()
     y = y.value_in(units.deg)
-    pyplot.xlim(y[1], y[-2])
+    pyplot.ylim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
 
@@ -266,7 +266,7 @@ def plot_surface_temperature(p, name="surface_temperature.eps"):
     pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
     pyplot.colorbar()
     y = y.value_in(units.deg)
-    pyplot.xlim(y[1], y[-2])
+    pyplot.ylim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
 
