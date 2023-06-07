@@ -180,14 +180,14 @@ Ocean__THCM__Starting_Parameters__Wind_Forcing: 1.0
 """
 
 
-def initialize_global_iemic(number_of_workers=1, redirection="none"):
+def initialize_global_iemic(number_of_workers=1, redirection="none", channel_type="sockets"):
 
     print(f"initializing IEMIC with {number_of_workers} workers")
 
     i = iemic(
         number_of_workers=number_of_workers,
         redirection=redirection,
-        channel_type="sockets",
+        channel_type=channel_type,
     )
 
     i.parameters.Ocean__Belos_Solver__FGMRES_tolerance = 1e-03
