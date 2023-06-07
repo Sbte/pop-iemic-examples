@@ -16,6 +16,10 @@ nearest_2D_remapper = partial(nearest_2D_remapper, check_inside=False)
 bilinear_2D_remapper_3D = partial(bilinear_2D_remapper, check_inside=False, do_slices=True)
 
 
+# state_name = 'global_state'
+state_name = 'idealized_120x54x12'
+
+
 def simple_upscale(x, fx, fy):
     # scale 2d x with integer factors
     return numpy.kron(x, numpy.ones((fx, fy)))
@@ -107,7 +111,7 @@ def compute_depth_index(iemic_state, number_of_workers=6):
 
 def initialize_pop(number_of_workers=6, iemic_state=None):
     if not iemic_state:
-        iemic_state = iemic.read_iemic_state_with_units("idealized_120x54x12")
+        iemic_state = iemic.read_iemic_state_with_units(state_name)
 
     levels, depth = compute_depth_index(iemic_state)
 
@@ -123,7 +127,7 @@ def initialize_pop(number_of_workers=6, iemic_state=None):
 
 
 def initialize_pop_with_iemic_setup(number_of_workers=6):
-    iemic_state = iemic.read_iemic_state_with_units("idealized_120x54x12")
+    iemic_state = iemic.read_iemic_state_with_units(state_name)
 
     # iemic.plot_barotropic_streamfunction(iemic_state, "iemic_bstream.eps")
     # iemic.plot_u_velocity(iemic_state.v_grid, "iemic_u_velocity.eps")
