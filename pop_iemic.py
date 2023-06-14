@@ -126,7 +126,7 @@ def initialize_pop(number_of_workers=6, iemic_state=None):
     return pop_instance
 
 
-def initialize_pop_with_iemic_setup(number_of_workers=6):
+def initialize_pop_with_iemic_setup(number_of_workers=6, state_name=state_name):
     iemic_state = iemic.read_iemic_state_with_units(state_name)
 
     # iemic.plot_barotropic_streamfunction(iemic_state, "iemic_bstream.eps")
@@ -137,15 +137,7 @@ def initialize_pop_with_iemic_setup(number_of_workers=6):
     # iemic.plot_surface_temperature(iemic_state.t_grid, "iemic_temperature.eps")
     # iemic.plot_streamplot(iemic_state, "iemic_streamplot.eps")
 
-    levels, depth = compute_depth_index(iemic_state)
-
-    pop_instance = pop.initialize_pop(
-        levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", number_of_workers=number_of_workers, latmin=pop.latmin, latmax=pop.latmax
-    )
-
-    reset_pop_forcing_from_iemic_state(pop_instance, iemic_state)
-
-    pop.plot_forcings_and_depth(pop_instance)
+    pop_instance = initialize_pop(number_of_workers, iemic_state)
 
     print("before reset")
 
