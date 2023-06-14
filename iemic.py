@@ -287,6 +287,8 @@ def save_iemic_state(i, label, directory="./"):
 
 
 def load_iemic_state(i, label, directory="./", copy_forcing=False):
+    i.load_xml_parameters("Ocean", os.path.join(directory, label + "_parameters.xml"))
+
     v_grid = read_set_from_file(os.path.join(directory, label + "_v_grid.amuse"), "amuse")
     t_grid = read_set_from_file(os.path.join(directory, label + "_t_grid.amuse"), "amuse")
 
@@ -295,8 +297,6 @@ def load_iemic_state(i, label, directory="./", copy_forcing=False):
 
     channel = t_grid.new_channel_to(i.t_grid)
     channel.copy_attributes(["pressure", "temperature", "salinity"])
-
-    i.load_xml_parameters("Ocean", os.path.join(directory, label + "_parameters.xml"))
 
     if not copy_forcing:
         return
