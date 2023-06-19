@@ -29,9 +29,17 @@ def postprocess(instance, x, mu, directory):
 
 
 def run_continuation(target=1.0):
-    instance = iemic.initialize_global_iemic(4)
+    instance = iemic.initialize_global_iemic(6)
 
-    print("starting")
+    snapdir = 'idealized_120x54x12'
+    if not os.path.exists(snapdir):
+        os.mkdir(snapdir)
+
+        print("starting")
+    else:
+        iemic.load_iemic_state(instance, 'latest', snapdir)
+
+        print("restarting")
 
     # the following line optionally redirects iemic output to file
     # ~ instance.set_output_file("output.%p")
@@ -53,10 +61,6 @@ def run_continuation(target=1.0):
         "Delta": 1.0e-6,
     }
 
-    snapdir = 'idealized_120x54x12'
-    if not os.path.exists(snapdir):
-        os.mkdir(snapdir)
-
     postprocess(instance, x, 0, snapdir)
 
     # setup continuation object
@@ -66,7 +70,9 @@ def run_continuation(target=1.0):
     print("start continuation, this may take a while")
 
     ds = 0.005
-    x, mu = continuation.continuation(x, "Ocean->THCM->Starting Parameters->Combined Forcing", 0.0, target, ds)
+    parameter_name = "Ocean->THCM->Starting Parameters->Combined Forcing"
+    start = instance.get_parameter(parameter_name)
+    x, mu = continuation.continuation(x, parameter_name, start, target, ds)
 
     iemic.save_iemic_state(instance, 'idealized_120x54x12')
 
