@@ -286,37 +286,12 @@ def save_iemic_state(i, label, directory="./"):
     shutil.copy(fname, os.path.join(directory, "latest_parameters.xml"))
 
 
-def load_iemic_state(i, label, directory="./", copy_forcing=False):
-    i.load_xml_parameters("Ocean", os.path.join(directory, label + "_parameters.xml"))
-
-    v_grid = read_set_from_file(os.path.join(directory, label + "_v_grid.amuse"), "amuse")
-    t_grid = read_set_from_file(os.path.join(directory, label + "_t_grid.amuse"), "amuse")
-
-    channel = v_grid.new_channel_to(i.v_grid)
-    channel.copy_attributes(["u_velocity", "v_velocity"])
-
-    channel = t_grid.new_channel_to(i.t_grid)
-    channel.copy_attributes(["pressure", "temperature", "salinity"])
-
-    if not copy_forcing:
-        return
-
-    surface_v_grid = read_set_from_file(os.path.join(directory, label + "_surface_v_grid.amuse"), "amuse")
-    surface_t_grid = read_set_from_file(os.path.join(directory, label + "_surface_t_grid.amuse"), "amuse")
-
-    channel = surface_v_grid.new_channel_to(i.surface_v_grid)
-    channel.copy_attributes(["tau_x", "tau_y"])
-
-    channel = surface_t_grid.new_channel_to(i.surface_t_grid)
-    channel.copy_attributes(["tatm", "emip"])
-
-
 def read_iemic_parameters(label, directory="./"):
     tree = xml.parse(os.path.join(directory, label + "_parameters.xml"))
     return tree.getroot()
 
 
-def read_iemic_state_with_units(label, directory="./"):
+def read_iemic_state(label, directory="./."):
     class FakeIemicInterface:
         def __init__(self):
             self.parameters = None
@@ -335,18 +310,47 @@ def read_iemic_state_with_units(label, directory="./"):
     i.parameters = read_iemic_parameters(label, directory)
 
     i.v_grid = read_set_from_file(os.path.join(directory, label + "_v_grid.amuse"), "amuse")
+    i.t_grid = read_set_from_file(os.path.join(directory, label + "_t_grid.amuse"), "amuse")
+
+    i.surface_v_grid = read_set_from_file(os.path.join(directory, label + "_surface_v_grid.amuse"), "amuse")
+    i.surface_t_grid = read_set_from_file(os.path.join(directory, label + "_surface_t_grid.amuse"), "amuse")
+
+    return i
+
+
+def load_iemic_state(i, label, directory="./", copy_forcing=False):
+    iemic_state = read_iemic_state(label, directory)
+
+    i.load_xml_parameters("Ocean", os.path.join(directory, label + "_parameters.xml"))
+
+    channel = iemic_state.v_grid.new_channel_to(i.v_grid)
+    channel.copy_attributes(["u_velocity", "v_velocity"])
+
+    channel = iemic_state.t_grid.new_channel_to(i.t_grid)
+    channel.copy_attributes(["pressure", "temperature", "salinity"])
+
+    if not copy_forcing:
+        return
+
+    channel = iemic_state.surface_v_grid.new_channel_to(i.surface_v_grid)
+    channel.copy_attributes(["tau_x", "tau_y"])
+
+    channel = iemic_state.surface_t_grid.new_channel_to(i.surface_t_grid)
+    channel.copy_attributes(["tatm", "emip"])
+
+
+def read_iemic_state_with_units(label, directory="./"):
+    i = read_iemic_state(label, directory)
+
     i.v_grid = get_grid_with_units(i.v_grid)
     i.v_grid.set_axes_names(["lon", "lat", "z"])
 
-    i.t_grid = read_set_from_file(os.path.join(directory, label + "_t_grid.amuse"), "amuse")
     i.t_grid = get_grid_with_units(i.t_grid)
     i.t_grid.set_axes_names(["lon", "lat", "z"])
 
-    i.surface_v_grid = read_set_from_file(os.path.join(directory, label + "_surface_v_grid.amuse"), "amuse")
     i.surface_v_grid = get_forcing_with_units(i, i.surface_v_grid)
     i.surface_v_grid.set_axes_names(["lon", "lat"])
 
-    i.surface_t_grid = read_set_from_file(os.path.join(directory, label + "_surface_t_grid.amuse"), "amuse")
     i.surface_t_grid = get_forcing_with_units(i, i.surface_t_grid)
     i.surface_t_grid.set_axes_names(["lon", "lat"])
 
