@@ -2,7 +2,7 @@ import os
 
 import iemic
 
-from fvm import Continuation
+from fvm import Continuation, utils
 
 
 def postprocess(instance, x, mu, directory):
@@ -28,16 +28,61 @@ def postprocess(instance, x, mu, directory):
         f.write("%.8e %.8e %.8e %.8e %.8e\n" % (mu, psib_min, psib_max, psim_min, psim_max))
 
 
+def get_labels(snapdir):
+    files = sorted(os.listdir(snapdir), reverse=True)
+    last_label = ""
+    for f in files:
+        if f.endswith("xml"):
+            label = f.split("_")[0]
+            try:
+                if last_label:
+                    float(label)
+                    float(last_label)
+                    break
+            except ValueError:
+                pass
+
+            last_label = label
+
+    return last_label, label
+
+
+def get_dx(instance, label, prev_label, snapdir):
+    iemic.load_iemic_state(instance, prev_label, snapdir, load_parameters=False)
+    x_prev = instance.get_state().copy()
+
+    iemic.load_iemic_state(instance, label, snapdir, load_parameters=False)
+    x = instance.get_state().copy()
+
+    dx = x - x_prev
+
+    print("dx norm", utils.norm(dx), flush=True)
+
+    return dx
+
+
 def run_continuation(target=1.0):
     instance = iemic.initialize_global_iemic(6)
 
-    snapdir = 'idealized_120x54x12'
+    dmu = None
+    dx = None
+
+    snapdir = "idealized_120x54x12"
     if not os.path.exists(snapdir):
         os.mkdir(snapdir)
 
         print("starting")
     else:
-        iemic.load_iemic_state(instance, 'latest', snapdir)
+        label, prev_label = get_labels(snapdir)
+
+        print(f"Reading states from {label} and {prev_label}", flush=True)
+
+        # Load the state to set the parameters correctly
+        iemic.load_iemic_state(instance, label, snapdir)
+
+        if prev_label:
+            dmu = float(label) - float(prev_label)
+            dx = get_dx(instance, label, prev_label, snapdir)
 
         print("restarting")
 
@@ -61,10 +106,8 @@ def run_continuation(target=1.0):
         "Delta": 1.0e-6,
     }
 
-    postprocess(instance, x, 0, snapdir)
-
     # setup continuation object
-    parameters['Postprocess'] = lambda instance, x, mu: postprocess(instance, x, mu, snapdir)
+    parameters["Postprocess"] = lambda instance, x, mu: postprocess(instance, x, mu, snapdir)
     continuation = Continuation(instance, parameters)
 
     print("start continuation, this may take a while")
@@ -72,15 +115,19 @@ def run_continuation(target=1.0):
     ds = 0.005
     parameter_name = "Ocean->THCM->Starting Parameters->Combined Forcing"
     start = instance.get_parameter(parameter_name)
-    x, mu = continuation.continuation(x, parameter_name, start, target, ds)
 
-    iemic.save_iemic_state(instance, 'idealized_120x54x12')
+    if start == 0:
+        postprocess(instance, x, start, snapdir)
+
+    x, mu = continuation.continuation(x, parameter_name, start, target, ds, dmu=dmu, dx=dx)
+
+    iemic.save_iemic_state(instance, "idealized_120x54x12")
 
     print("continuation done")
 
     instance.stop()
 
-    state = iemic.read_iemic_state_with_units('idealized_120x54x12')
+    state = iemic.read_iemic_state_with_units("idealized_120x54x12")
 
     iemic.plot_u_velocity(state)
     iemic.plot_v_velocity(state)

@@ -318,10 +318,11 @@ def read_iemic_state(label, directory="./."):
     return i
 
 
-def load_iemic_state(i, label, directory="./", copy_forcing=False):
+def load_iemic_state(i, label, directory="./", load_parameters=True, copy_forcing=False):
     iemic_state = read_iemic_state(label, directory)
 
-    i.load_xml_parameters("Ocean", os.path.join(directory, label + "_parameters.xml"))
+    if load_parameters:
+        i.load_xml_parameters("Ocean", os.path.join(directory, label + "_parameters.xml"))
 
     channel = iemic_state.v_grid.new_channel_to(i.v_grid)
     channel.copy_attributes(["u_velocity", "v_velocity"])
