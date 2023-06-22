@@ -18,7 +18,7 @@ def barotropic_streamfunction(u, dz, dy):
     uint = (uint * dy)[:, ::-1].cumsum(axis=-1)[:, ::-1]
 
     psib = numpy.zeros((u.shape[0], u.shape[1] + 1)) * uint[0, 0]
-    psib[:, 1:] = -uint
+    psib[:, 1:] = uint
 
     return psib
 
@@ -42,6 +42,6 @@ def overturning_streamfunction(v, dz, dx):
     vint = (vint * dz).cumsum(axis=-1)
 
     psim = numpy.zeros((v.shape[1], v.shape[2] + 1)) * vint[0, 0]
-    psim[:, 1:] = -vint
+    psim[:, 1:] = vint
 
     return psim
