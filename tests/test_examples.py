@@ -12,9 +12,10 @@ def test_iemic_continuation():
     if os.path.isdir(directory):
         shutil.rmtree(directory)
 
-    run_continuation(0.0001)
+    run_continuation(0.003)
 
     assert os.path.isfile(os.path.join(directory, '0.0000_t_grid.amuse'))
+    assert os.path.isfile(os.path.join(directory, '0.0030_t_grid.amuse'))
     assert os.path.isfile(os.path.join(directory, 'latest_t_grid.amuse'))
 
     os.chdir('..')
@@ -26,9 +27,10 @@ def test_restart_iemic_continuation():
     os.chdir('tests')
 
     directory = 'idealized_120x54x12'
-    run_continuation(0.0001)
+    run_continuation(0.006)
 
     assert os.path.isfile(os.path.join(directory, '0.0000_t_grid.amuse'))
+    assert os.path.isfile(os.path.join(directory, '0.0061_t_grid.amuse'))
     assert os.path.isfile(os.path.join(directory, 'latest_t_grid.amuse'))
 
     os.chdir('..')
