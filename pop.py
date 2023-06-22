@@ -423,18 +423,21 @@ def reset_pop_state(p, label, snapdir="snapshots"):
     elements3d = read_set_from_file(os.path.join(snapdir, label + "_elements3d.amuse"), "amuse")
 
     channel1 = nodes.new_channel_to(p.nodes)
-    # channel1.copy_attributes(["gradx","grady", "vx_barotropic", "vy_barotropic"])
-    channel1.copy_attributes(["vx_barotropic", "vy_barotropic"])
+    channel1.copy_attributes(["gradx", "grady", "vx_barotropic", "vy_barotropic"])
+    # channel1.copy_attributes(["vx_barotropic", "vy_barotropic"])
 
     channel2 = nodes3d.new_channel_to(p.nodes3d)
     channel2.copy_attributes(["xvel", "yvel"])
 
     channel3 = elements3d.new_channel_to(p.elements3d)
-    # channel3.copy_attributes(["rho", "salinity", "temperature"])
-    channel3.copy_attributes(["salinity", "temperature"])
+    channel3.copy_attributes(["rho", "salinity", "temperature"])
+    # channel3.copy_attributes(["salinity", "temperature"])
 
     channel1 = elements.new_channel_to(p.elements)
     channel1.copy_attributes(["ssh"])
+
+    # p.parameters.reinit_gradp = True
+    # p.parameters.reinit_rho = True
 
 
 def read_pop_state(label, directory="./"):
