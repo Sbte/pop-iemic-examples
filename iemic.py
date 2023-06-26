@@ -325,7 +325,7 @@ def load_iemic_state(i, label, directory="./", load_parameters=True, copy_forcin
         i.load_xml_parameters("Ocean", os.path.join(directory, label + "_parameters.xml"))
 
     channel = iemic_state.v_grid.new_channel_to(i.v_grid)
-    channel.copy_attributes(["u_velocity", "v_velocity"])
+    channel.copy_attributes(["u_velocity", "v_velocity", "w_velocity"])
 
     channel = iemic_state.t_grid.new_channel_to(i.t_grid)
     channel.copy_attributes(["pressure", "temperature", "salinity"])
@@ -401,11 +401,13 @@ def get_grid_with_units(grid):
             [
                 "u_velocity",
                 "v_velocity",
+                "w_velocity",
             ],
             add_units_v,
             [
                 "u_velocity",
                 "v_velocity",
+                "w_velocity",
             ],
         )
 
@@ -413,30 +415,12 @@ def get_grid_with_units(grid):
             [
                 "u_forcing",
                 "v_forcing",
-            ],
-            add_units_v,
-            [
-                "u_forcing",
-                "v_forcing",
-            ],
-        )
-    elif "w_velocity" in attributes:
-        channel.transform(
-            [
-                "w_velocity",
-            ],
-            add_units_v,
-            [
-                "w_velocity",
-            ],
-        )
-
-        channel.transform(
-            [
                 "w_forcing",
             ],
             add_units_v,
             [
+                "u_forcing",
+                "v_forcing",
                 "w_forcing",
             ],
         )
