@@ -20,11 +20,6 @@ bilinear_2D_remapper_3D = partial(bilinear_2D_remapper, check_inside=False, do_s
 state_name = 'idealized_120x54x12'
 
 
-def simple_upscale(x, fx, fy):
-    # scale 2d x with integer factors
-    return numpy.kron(x, numpy.ones((fx, fy)))
-
-
 def reset_pop_state_from_iemic_state(pop_instance, iemic_state):
 
     # quick fix
@@ -60,24 +55,12 @@ def reset_pop_forcing_from_iemic_state(pop_instance, iemic_state):
 def compute_depth_index(iemic_state, number_of_workers=6):
     mask = iemic_state.t_grid.mask
 
-    depth = numpy.zeros((pop.Nx, pop.Ny))
-    depth[:, 1:-1] = iemic.depth_array_from_mask(mask)  # convert to (index) depth array
-
-    # levels = depth_levels(Nz + 1, stretch_factor=stretch_factor) * Hdim
-
     # We get the levels directly instead because of the way i-emic calculates them
     z = iemic_state.v_grid.z[0, 0, :]
     z = iemic.z_from_center(z)
     levels = -z[::-1]
 
-    # no interpolation for bathymetry
-    # upscaled_depth = simple_upscale(depth, 1, 3)
-
-    # return levels, upscaled_depth
-
-    # import sys
-    # numpy.set_printoptions(threshold=sys.maxsize, linewidth=500)
-    # print(upscaled_depth.astype(int))
+    depth = numpy.zeros((pop.Nx, pop.Ny))
 
     pop_instance = pop.initialize_pop(
         levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", latmin=pop.latmin, latmax=pop.latmax, number_of_workers=number_of_workers
@@ -113,7 +96,7 @@ def initialize_pop(number_of_workers=6, iemic_state=None):
     if not iemic_state:
         iemic_state = iemic.read_iemic_state_with_units(state_name)
 
-    levels, depth = compute_depth_index(iemic_state)
+    levels, depth = compute_depth_index(iemic_state, number_of_workers)
 
     pop_instance = pop.initialize_pop(
         levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", number_of_workers=number_of_workers, latmin=pop.latmin, latmax=pop.latmax
