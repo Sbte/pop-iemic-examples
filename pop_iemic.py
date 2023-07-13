@@ -162,7 +162,7 @@ def amoc(pop_instance):
 
         pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
 
-    depth = pop_amoc_state.nodes.depth
+    depth = pop_amoc_state.elements.depth
     mask = depth.value_in(units.km) == 0
 
     yvel = pop_instance.nodes3d.yvel.copy()
@@ -192,7 +192,7 @@ def plot_amoc(pop_instance, name="amoc.eps"):
     z = pop_amoc_state.nodes3d.z[0, 0, :]
     z = pop.z_from_center(z)
 
-    mask = [numpy.max(pop_amoc_state.nodes.depth.value_in(units.km), axis=0) < zi for zi in z.value_in(units.km)]
+    mask = [numpy.max(pop_amoc_state.elements.depth.value_in(units.km), axis=0) < zi for zi in z.value_in(units.km)]
     mask = numpy.array(mask).T
     mask = mask[yi, :]
 

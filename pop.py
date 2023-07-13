@@ -242,7 +242,7 @@ def plot_surface_salinity(p, name="surface_salinity.eps"):
     y = p.elements3d.lat[0, :, 0]
 
     val = p.elements3d.salinity[:, :, 0]
-    mask = p.nodes.depth.value_in(units.km) == 0
+    mask = p.elements.depth.value_in(units.km) == 0
     val = numpy.ma.array(val.value_in(units.psu), mask=mask)
 
     pyplot.figure()
@@ -259,7 +259,7 @@ def plot_surface_temperature(p, name="surface_temperature.eps"):
     y = p.elements3d.lat[0, :, 0]
 
     val = p.elements3d.temperature[:, :, 0]
-    mask = p.nodes.depth.value_in(units.km) == 0
+    mask = p.elements.depth.value_in(units.km) == 0
     val = numpy.ma.array(val.value_in(units.Celsius), mask=mask)
 
     pyplot.figure()
@@ -278,7 +278,7 @@ def plot_streamplot(p, name="streamplot.eps"):
     u = p.nodes3d.xvel[:, :, 0]
     v = p.nodes3d.yvel[:, :, 0]
 
-    mask = p.nodes.depth.value_in(units.km) == 0
+    mask = p.elements.depth.value_in(units.km) == 0
     u2 = numpy.ma.array(u.value_in(units.m / units.s), mask=mask)
 
     pyplot.figure()
@@ -314,7 +314,7 @@ def barotropic_streamfunction(p):
 def plot_barotropic_streamfunction(p, name="bstream.eps"):
     # psib = psib.value_in(units.Sv)[:, 1:]
     psib = barotropic_streamfunction(p)
-    mask = p.nodes.depth.value_in(units.km) == 0
+    mask = p.elements.depth.value_in(units.km) == 0
     psib = numpy.ma.array(psib[:, 1:], mask=mask)
 
     x = p.nodes3d.lon[:, 0, 0]
@@ -356,7 +356,7 @@ def plot_overturning_streamfunction(p, name="mstream.eps"):
     z = p.nodes3d.z[0, 0, :]
     z = z_from_center(z)
 
-    mask = [numpy.max(p.nodes.depth.value_in(units.km), axis=0) < zi for zi in z.value_in(units.km)]
+    mask = [numpy.max(p.elements.depth.value_in(units.km), axis=0) < zi for zi in z.value_in(units.km)]
     mask = numpy.array(mask).T
     psim = numpy.ma.array(psim, mask=mask)
 
