@@ -30,7 +30,7 @@ def postprocess(instance, x, mu, directory):
 
 def get_labels(snapdir):
     files = sorted(os.listdir(snapdir), reverse=True)
-    last_label = ""
+    last_label = None
     for f in files:
         if f.endswith("xml"):
             label = f.split("_")[0]
@@ -80,9 +80,11 @@ def run_continuation(target=1.0):
         # Load the state to set the parameters correctly
         iemic.load_iemic_state(instance, label, snapdir)
 
-        if prev_label:
+        if label:
             dmu = float(label) - float(prev_label)
             dx = get_dx(instance, label, prev_label, snapdir)
+
+            print("dmu", dmu, flush=True)
 
         print("restarting")
 
