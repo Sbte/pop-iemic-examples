@@ -52,7 +52,7 @@ def reset_pop_forcing_from_iemic_state(pop_instance, iemic_state):
     channel.copy_attributes(["tatm", "emip"], target_names=["restoring_temp", "restoring_salt"])
 
 
-def compute_depth_index(iemic_state, number_of_workers=6):
+def compute_depth_index(iemic_state, number_of_workers=4):
     mask = iemic_state.t_grid.mask
 
     # We get the levels directly instead because of the way i-emic calculates them
@@ -96,7 +96,7 @@ def initialize_pop(number_of_workers=6, iemic_state=None):
     if not iemic_state:
         iemic_state = iemic.read_iemic_state_with_units(state_name)
 
-    levels, depth = compute_depth_index(iemic_state, number_of_workers)
+    levels, depth = compute_depth_index(iemic_state)
 
     pop_instance = pop.initialize_pop(
         levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", number_of_workers=number_of_workers, latmin=pop.latmin, latmax=pop.latmax
