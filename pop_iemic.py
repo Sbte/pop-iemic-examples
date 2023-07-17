@@ -141,6 +141,9 @@ def amoc(pop_instance):
         iemic_state = iemic.get_amoc_state()
 
         amoc_pop_instance = initialize_pop(iemic_state=iemic_state)
+
+        assert amoc_pop_instance.mode == pop_instance.mode
+
         pop.save_pop_state(amoc_pop_instance, "amoc_state_" + pop_instance.mode)
         amoc_pop_instance.stop()
 
