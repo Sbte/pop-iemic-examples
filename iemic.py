@@ -18,6 +18,11 @@ import bstream
 
 from fvm import Continuation
 
+
+Nx = 120
+Ny = 54
+Nz = 12
+
 # some utility functions
 # note that i-emic defines depth levels as negative numbers!
 
@@ -43,7 +48,7 @@ def depth_levels(N, stretch_factor=1.8):
 
 def read_global_mask(Nx, Ny, Nz, filename=None):
     if filename is None:
-        filename = "mask_global_{0}x{1}x{2}".format(Nx, Ny, Nz)
+        filename = f"mask_global_{Nx}x{Ny}x{Nz}"
 
     mask = numpy.zeros((Nx + 2, Ny + 2, Nz + 2), dtype="int")
 
@@ -201,9 +206,9 @@ def initialize_global_iemic(number_of_workers=1, redirection="none", channel_typ
     i.parameters.Ocean__THCM__Global_Bound_ymax = 81
 
     i.parameters.Ocean__THCM__Periodic = True
-    i.parameters.Ocean__THCM__Global_Grid_Size_n = 120
-    i.parameters.Ocean__THCM__Global_Grid_Size_m = 54
-    i.parameters.Ocean__THCM__Global_Grid_Size_l = 12
+    i.parameters.Ocean__THCM__Global_Grid_Size_n = Nx
+    i.parameters.Ocean__THCM__Global_Grid_Size_m = Ny
+    i.parameters.Ocean__THCM__Global_Grid_Size_l = Nz
 
     i.parameters.Ocean__THCM__Grid_Stretching_qz = 1.8
     i.parameters.Ocean__THCM__Depth_hdim = 5000.0
@@ -212,7 +217,7 @@ def initialize_global_iemic(number_of_workers=1, redirection="none", channel_typ
     i.parameters.Ocean__THCM__Flat_Bottom = False
 
     i.parameters.Ocean__THCM__Read_Land_Mask = True
-    i.parameters.Ocean__THCM__Land_Mask = "global_120x54x12.mask"
+    i.parameters.Ocean__THCM__Land_Mask = f"global_{Nx}x{Ny}x{Nz}.mask"
 
     i.parameters.Ocean__THCM__Rho_Mixing = False
 
