@@ -317,13 +317,30 @@ def plot_barotropic_streamfunction(p, name="bstream.eps"):
     mask = p.elements.depth.value_in(units.km) == 0
     psib = numpy.ma.array(psib[:, 1:], mask=mask)
 
-    x = p.nodes3d.lon[:, 0, 0]
-    y = p.nodes3d.lat[0, :, 0]
+    x = p.nodes3d.lon[:, 0, 0].value_in(units.deg)
+    y = p.nodes3d.lat[0, :, 0].value_in(units.deg)
 
-    pyplot.figure()
-    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), psib.T)
-    pyplot.colorbar()
-    y = y.value_in(units.deg)
+    for i in range(len(x)):
+        if x[i] > 180:
+            x[i] = x[i] - 360
+
+    i = numpy.argsort(x)
+    i = numpy.insert(i, 0, i[-1])
+
+    psib = psib[i, :]
+    x = x[i]
+    x[0] -= 360
+
+    pyplot.figure(figsize=(7, 3.5))
+
+    pyplot.contourf(x, y, psib.T)
+    # pyplot.contourf(x, y, psib.T, levels=numpy.linspace(-60, 120, 13))
+
+    pyplot.xticks([-180, -120, -60, 0, 60, 120, 180],
+                  ['180°W', '120°W', '60°W', '0°', '60°E', '120°E', '180°E'])
+    pyplot.yticks([-60, -30, 0, 30, 60],
+                  ['60°S', '30°S', '0°', '30°N', '60°N'])
+    pyplot.colorbar(label='Sv')
     pyplot.ylim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
