@@ -185,8 +185,12 @@ def plot_amoc(pop_instance, name="amoc.eps"):
 
     val = numpy.ma.array(psim, mask=mask)
 
-    pyplot.figure()
-    pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), val.T)
-    pyplot.colorbar()
+    pyplot.figure(figsize=(7, 3.5))
+    pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), val.T, levels=15)
+    pyplot.xticks([-30, 0, 30, 60], ['30°S', '0°', '30°N', '60°N'])
+    yticks = [0, -1000, -2000, -3000, -4000, -5000]
+    pyplot.yticks(yticks, [str(int(abs(i))) for i in yticks])
+    pyplot.ylabel('Depth (m)')
+    pyplot.colorbar(label='Sv')
     pyplot.savefig(name)
     pyplot.close()
