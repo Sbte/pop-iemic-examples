@@ -388,6 +388,24 @@ def plot_overturning_streamfunction(p, name="mstream.eps"):
     pyplot.close()
 
 
+def depth_integrated_temperature(p, max_depth=None):
+    t = p.elements3d.temperature
+
+    z = p.nodes3d.z[0, 0, :]
+    z = z_from_center(z)
+
+    if max_depth:
+        i = [i for i in range(len(z)) if z[i].value_in(units.m) < max_depth]
+        z = z[i]
+        t = t[:, :, i[:-1]]
+
+    dz = z[1:] - z[:-1]
+
+    # depth integration
+    tint = (t * dz).sum(axis=-1) / dz.sum()
+    return tint.value_in(units.Celsius)
+
+
 def plot_tdata(directory="snapshots", fname="tdata.txt"):
     with open(os.path.join(directory, fname)) as f:
         t = []
