@@ -136,26 +136,10 @@ def initialize_pop_with_iemic_setup(number_of_workers=6, state_name=state_name):
 
 def amoc(pop_instance):
     try:
-        iemic_state = iemic.read_iemic_state_with_units("amoc_state_" + pop_instance.mode)
-    except FileNotFoundError:
-        iemic_instance = iemic.initialize_global_iemic(channel_type="mpi")
-
-        Nx = iemic_instance.parameters.Ocean__THCM__Global_Grid_Size_n
-        Ny = iemic_instance.parameters.Ocean__THCM__Global_Grid_Size_m
-        Nz = iemic_instance.parameters.Ocean__THCM__Global_Grid_Size_l
-
-        iemic_instance.parameters.Ocean__THCM__Land_Mask = f"amoc_{Nx}x{Ny}x{Nz}.mask"
-        # iemic_instance.parameters.Ocean__Analyze_Jacobian = False
-
-        iemic.save_iemic_state(iemic_instance, "amoc_state_" + pop_instance.mode)
-
-        iemic_instance.stop()
-
-        iemic_state = iemic.read_iemic_state_with_units("amoc_state_" + pop_instance.mode)
-
-    try:
         pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
     except IoException:
+        iemic_state = iemic.get_amoc_state()
+
         amoc_pop_instance = initialize_pop(iemic_state=iemic_state)
         pop.save_pop_state(amoc_pop_instance, "amoc_state_" + pop_instance.mode)
         amoc_pop_instance.stop()

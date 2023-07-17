@@ -710,6 +710,22 @@ def plot_overturning_streamfunction(state, name="mstream.eps"):
     pyplot.close()
 
 
+def get_amoc_state():
+    try:
+        return read_iemic_state_with_units(f"amoc_state_{Nx}x{Ny}x{Nz}")
+    except FileNotFoundError:
+        iemic_instance = initialize_global_iemic(channel_type="mpi")
+
+        iemic_instance.parameters.Ocean__THCM__Land_Mask = f"amoc_{Nx}x{Ny}x{Nz}.mask"
+        iemic_instance.parameters.Ocean__Analyze_Jacobian = False
+
+        save_iemic_state(iemic_instance, f"amoc_state_{Nx}x{Ny}x{Nz}")
+
+        iemic_instance.stop()
+
+        return read_iemic_state_with_units(f"amoc_state_{Nx}x{Ny}x{Nz}")
+
+
 def get_ssh(i):
     surface = i.t_grid[:, :, -1]  # note surface is -1
     result = surface.empty_copy()
