@@ -186,8 +186,8 @@ def plot_amoc(pop_instance, name="amoc.eps"):
     val = numpy.ma.array(psim, mask=mask)
 
     pyplot.figure(figsize=(7, 3.5))
-    pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), val.T, levels=15)
-    pyplot.xticks([-30, 0, 30, 60], ['30°S', '0°', '30°N', '60°N'])
+    pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), val.T)
+    pyplot.xticks([-20, 0, 20, 40, 60], ['20°S', '0°', '20°N', '40°N', '60°N'])
     pyplot.xlim(-30, 70)
     yticks = [0, -1000, -2000, -3000, -4000, -5000]
     pyplot.yticks(yticks, [str(int(abs(i))) for i in yticks])
