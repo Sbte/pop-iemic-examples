@@ -47,18 +47,22 @@ def get_labels(snapdir):
     return last_label, label
 
 
-def get_dx(instance, label, prev_label, snapdir):
+def get_dx(instance, label, prev_label, snapdir, parameter_name):
     iemic.load_iemic_state(instance, prev_label, snapdir, load_parameters=False)
     x_prev = instance.get_state().copy()
+    mu_prev = instance.get_parameter(parameter_name)
 
     iemic.load_iemic_state(instance, label, snapdir, load_parameters=False)
     x = instance.get_state().copy()
+    mu = instance.get_parameter(parameter_name)
 
     dx = x - x_prev
+    dmu = mu - mu_prev
 
     print("dx norm", utils.norm(dx), flush=True)
+    print("dmu", dmu, flush=True)
 
-    return dx
+    return dx, dmu
 
 
 def run_continuation(target=1.0):
@@ -66,6 +70,8 @@ def run_continuation(target=1.0):
 
     dmu = None
     dx = None
+
+    parameter_name = "Ocean->THCM->Starting Parameters->Combined Forcing"
 
     snapdir = "idealized_120x54x12"
     if not os.path.exists(snapdir):
@@ -81,10 +87,7 @@ def run_continuation(target=1.0):
         iemic.load_iemic_state(instance, label, snapdir)
 
         if label:
-            dmu = float(label) - float(prev_label)
-            dx = get_dx(instance, label, prev_label, snapdir)
-
-            print("dmu", dmu, flush=True)
+            dx, dmu = get_dx(instance, label, prev_label, snapdir, parameter_name)
 
         print("restarting")
 
@@ -115,7 +118,6 @@ def run_continuation(target=1.0):
     print("start continuation, this may take a while")
 
     ds = 0.005
-    parameter_name = "Ocean->THCM->Starting Parameters->Combined Forcing"
     start = instance.get_parameter(parameter_name)
 
     if start == 0:
