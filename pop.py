@@ -4,8 +4,6 @@ import numpy
 import time
 from matplotlib import pyplot
 
-numpy.random.seed(123451)
-
 from omuse.community.pop.interface import POP
 from omuse.units import units, constants, quantities
 
@@ -13,6 +11,7 @@ from amuse.io import write_set_to_file, read_set_from_file
 
 import bstream
 
+numpy.random.seed(123451)
 
 # Nx = 96
 # Ny = 40
