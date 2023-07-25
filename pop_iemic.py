@@ -104,6 +104,18 @@ def initialize_pop(number_of_workers=6, iemic_state=None):
 
     pop.plot_forcings_and_depth(pop_instance)
 
+    lat_diff = numpy.min(abs(pop_instance.elements.lat - iemic_state.t_grid.lat[0, 0, 0]).value_in(units.deg))
+    print('Latitude difference', lat_diff)
+    print(pop_instance.elements.lat[0, :].value_in(units.deg))
+    print(iemic_state.t_grid.lat[0, :, 0].value_in(units.deg))
+    assert lat_diff < 1e-2
+
+    lon_diff = numpy.min(abs(pop_instance.elements.lon - iemic_state.t_grid.lon[0, 0, 0]).value_in(units.deg))
+    print('Longitude difference', lon_diff)
+    print(pop_instance.elements.lon[:, 0].value_in(units.deg))
+    print(iemic_state.t_grid.lon[:, 0, 0].value_in(units.deg))
+    assert lon_diff < 1e-2
+
     return pop_instance
 
 
