@@ -73,8 +73,6 @@ def compute_depth_index(iemic_state, number_of_workers=4):
 
     source_depth.set_values_in_store(None, ["depth_index"], [iemic.depth_array_from_mask(mask)])
 
-    depth = numpy.round(source_depth.depth_index)
-
     pop_surface = pop_instance.elements
     target_depth = pop_surface.empty_copy()
     channel = pop_surface.new_channel_to(target_depth)
