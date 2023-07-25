@@ -185,7 +185,7 @@ Ocean__THCM__Starting_Parameters__Wind_Forcing: 1.0
 """
 
 
-def initialize_global_iemic(number_of_workers=1, redirection="none", channel_type="sockets"):
+def initialize_global_iemic(number_of_workers=1, redirection="none", channel_type="mpi"):
 
     print(f"initializing IEMIC with {number_of_workers} workers")
 
