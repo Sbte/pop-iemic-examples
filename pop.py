@@ -13,30 +13,23 @@ import bstream
 
 numpy.random.seed(123451)
 
-# Nx = 96
-# Ny = 40
-# latmin = -90.0 | units.deg
-# latmax = 90.0 | units.deg
-
-# Nx = 96
-# Ny = 120
-# latmin = -85.5 | units.deg
-# latmax = 85.5 | units.deg
 
 Nx = 120
 Ny = 56
 latmin = -84 | units.deg
 latmax = 84 | units.deg
 
-# Nx = 192
-# Ny = 120
-# latmin = -85.5 | units.deg
-# latmax = 85.5 | units.deg
+lonmin = 0 | units.deg
+lonmax = 360 | units.deg
 
+# Nx = 240
+# Ny = 110
 
-def simple_upscale(x, fx, fy):
-    # scale 2d x with integer factors
-    return numpy.kron(x, numpy.ones((fx, fy)))
+# latmin = -81.75 | units.deg
+# latmax = 83.25 | units.deg
+
+# lonmin = 0.75 | units.deg
+# lonmax = 360.75 | units.deg
 
 
 def plot_forcings_and_depth(p, label="pop"):
@@ -91,8 +84,8 @@ def initialize_pop(depth_levels, depth_array, mode=f"{Nx}x{Ny}x12", number_of_wo
     p.parameters.topography_option = "amuse"
     p.parameters.depth_index = depth_array
     p.parameters.horiz_grid_option = "amuse"
-    p.parameters.lonmin = 0 | units.deg
-    p.parameters.lonmax = 360 | units.deg
+    p.parameters.lonmin = lonmin
+    p.parameters.lonmax = lonmax
     p.parameters.latmin = latmin
     p.parameters.latmax = latmax
     p.parameters.vert_grid_option = "amuse"
