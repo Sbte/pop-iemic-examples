@@ -7,13 +7,12 @@ import pop
 from omuse.units import units
 from amuse.io.base import IoException
 
-from amuse.ext.grid_remappers import bilinear_2D_remapper, nearest_2D_remapper
+from amuse.ext.grid_remappers import bilinear_2D_remapper
 
 from functools import partial
 
-bilinear_2D_remapper = partial(bilinear_2D_remapper, check_inside=False)
-nearest_2D_remapper = partial(nearest_2D_remapper, check_inside=False)
-bilinear_2D_remapper_3D = partial(bilinear_2D_remapper, check_inside=False, do_slices=True)
+bilinear_2D_remapper = partial(bilinear_2D_remapper, check_inside=False, x_periodic=True)
+bilinear_2D_remapper_3D = partial(bilinear_2D_remapper, check_inside=False, do_slices=True, x_periodic=True)
 
 
 # state_name = 'global_state'
