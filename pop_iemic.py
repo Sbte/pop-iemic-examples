@@ -89,11 +89,28 @@ def compute_depth_index(iemic_state, number_of_workers=4):
     return levels, depth
 
 
-def initialize_pop(number_of_workers=6, iemic_state=None):
+def compute_depth_index_from_mask(mask):
+    levels = iemic.depth_levels(13) * 5000 | units.m
+
+    depth = numpy.zeros((pop.Nx, pop.Ny), dtype=int)
+    for k in range(mask.shape[2]):
+        for j in range(mask.shape[1]):
+            for i in range(mask.shape[0]):
+                if not depth[i, j+1]:
+                    if mask[i, j, k] == 0:
+                        depth[i, j+1] = 12 - k
+
+    return levels, depth
+
+
+def initialize_pop(number_of_workers=6, iemic_state=None, iemic_mask=None):
     if not iemic_state:
         iemic_state = iemic.read_iemic_state_with_units(state_name)
 
-    levels, depth = compute_depth_index(iemic_state)
+    if iemic_mask is not None:
+        levels, depth = compute_depth_index_from_mask(iemic_mask)
+    else:
+        levels, depth = compute_depth_index(iemic_state)
 
     pop_instance = pop.initialize_pop(
         levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", number_of_workers=number_of_workers, latmin=pop.latmin, latmax=pop.latmax
@@ -118,7 +135,7 @@ def initialize_pop(number_of_workers=6, iemic_state=None):
     return pop_instance
 
 
-def initialize_pop_with_iemic_setup(number_of_workers=6, state_name=state_name):
+def initialize_pop_with_iemic_setup(number_of_workers=6, state_name=state_name, iemic_mask=None):
     iemic_state = iemic.read_iemic_state_with_units(state_name)
 
     # iemic.plot_barotropic_streamfunction(iemic_state, "iemic_bstream.eps")
@@ -129,7 +146,7 @@ def initialize_pop_with_iemic_setup(number_of_workers=6, state_name=state_name):
     # iemic.plot_surface_temperature(iemic_state.t_grid, "iemic_temperature.eps")
     # iemic.plot_streamplot(iemic_state, "iemic_streamplot.eps")
 
-    pop_instance = initialize_pop(number_of_workers, iemic_state)
+    pop_instance = initialize_pop(number_of_workers, iemic_state, iemic_mask)
 
     print("before reset")
 
