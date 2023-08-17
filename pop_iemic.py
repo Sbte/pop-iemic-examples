@@ -175,13 +175,13 @@ def amoc(pop_instance):
 
         pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
 
-    depth = pop_amoc_state.elements.depth
-    mask = depth.value_in(units.km) == 0
+    amoc_depth = pop_amoc_state.elements.depth.value_in(units.km)
+    depth = pop_instance.elements.depth.value_in(units.km)
 
     yvel = pop_instance.nodes3d.yvel.copy()
     for i in range(yvel.shape[0]):
         for j in range(yvel.shape[1]):
-            if mask[i, j]:
+            if depth[i, j] > amoc_depth[i, j]:
                 yvel[i, j, :] = 0 | units.m / units.s
 
     pop_amoc_state.nodes3d.yvel = yvel
