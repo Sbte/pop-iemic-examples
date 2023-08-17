@@ -30,6 +30,7 @@ def postprocess(instance, x, mu, directory):
 
 def get_labels(snapdir):
     files = sorted(os.listdir(snapdir), reverse=True)
+    label = None
     last_label = None
     for f in files:
         if f.endswith("xml"):
@@ -73,7 +74,7 @@ def run_continuation(target=1.0):
 
     parameter_name = "Ocean->THCM->Starting Parameters->Combined Forcing"
 
-    snapdir = "idealized_120x54x12"
+    snapdir = f"idealized_{iemic.Nx}x{iemic.Ny}x{iemic.Nz}"
     if not os.path.exists(snapdir):
         os.mkdir(snapdir)
 
@@ -83,13 +84,13 @@ def run_continuation(target=1.0):
 
         print(f"Reading states from {label} and {prev_label}", flush=True)
 
-        # Load the state to set the parameters correctly
-        iemic.load_iemic_state(instance, label, snapdir)
-
         if label:
+            # Load the state to set the parameters correctly
+            iemic.load_iemic_state(instance, label, snapdir)
+
             dx, dmu = get_dx(instance, label, prev_label, snapdir, parameter_name)
 
-        print("restarting")
+            print("restarting")
 
     # the following line optionally redirects iemic output to file
     # ~ instance.set_output_file("output.%p")
@@ -125,13 +126,13 @@ def run_continuation(target=1.0):
 
     x, mu = continuation.continuation(x, parameter_name, start, target, ds, dmu=dmu, dx=dx)
 
-    iemic.save_iemic_state(instance, "idealized_120x54x12")
+    iemic.save_iemic_state(instance, f"idealized_{iemic.Nx}x{iemic.Ny}x{iemic.Nz}")
 
     print("continuation done")
 
     instance.stop()
 
-    state = iemic.read_iemic_state_with_units("idealized_120x54x12")
+    state = iemic.read_iemic_state_with_units(f"idealized_{iemic.Nx}x{iemic.Ny}x{iemic.Nz}")
 
     iemic.plot_u_velocity(state)
     iemic.plot_v_velocity(state)
