@@ -34,7 +34,7 @@ def run(tend=10 | units.day, dt=1 | units.day, argv=[]):
     pop.long_restart(pop_instance, i0, tend=tend, dt=dt, loaddir=directory, snapdir=snapdir)
 
     pop.plot_ssh(pop_instance, "ssh_" + str(tend))
-    pop.plot_sst(pop_instance, "sst_" + str(tend))
+    pop.plot_sst(pop_instance, "sst_" + str(tend) + ".eps")
     pop.plot_velocity(pop_instance, "velocity_" + str(tend) + ".eps")
     pop.plot_salinity(pop_instance, "salinity_" + str(tend) + ".eps")
     pop.plot_temperature(pop_instance, "temperature_" + str(tend) + ".eps")

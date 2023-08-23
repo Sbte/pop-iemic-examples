@@ -163,12 +163,9 @@ def plot_globe(p, value, unit, name):
     pyplot.close()
 
 
-def plot_sst(p, label="sst"):
-    pyplot.figure()
-    pyplot.imshow(p.elements.temperature.value_in(units.Celsius).T, origin="lower", vmin=0, vmax=30)
-    pyplot.colorbar()
-    pyplot.savefig(label + ".png")
-    pyplot.close()
+def plot_sst(p, name="sst.eps"):
+    sst = p.elements.temperature.value_in(units.Celsius)
+    plot_globe(p, sst, "°C", name)
 
 
 def plot_ssh(p, label="ssh"):
