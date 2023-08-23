@@ -248,20 +248,8 @@ def plot_temperature(p, name="temperature.eps"):
 
 
 def plot_surface_salinity(p, name="surface_salinity.eps"):
-    x = p.elements3d.lon[:, 0, 0]
-    y = p.elements3d.lat[0, :, 0]
-
-    val = p.elements3d.salinity[:, :, 0]
-    mask = p.elements.depth.value_in(units.km) == 0
-    val = numpy.ma.array(val.value_in(units.psu), mask=mask)
-
-    pyplot.figure()
-    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), val.T)
-    pyplot.colorbar()
-    y = y.value_in(units.deg)
-    pyplot.ylim(y[1], y[-2])
-    pyplot.savefig(name)
-    pyplot.close()
+    val = p.elements3d.salinity[:, :, 0].value_in(units.psu)
+    plot_globe(p, val, "psu", name)
 
 
 def plot_surface_temperature(p, name="surface_temperature.eps"):
