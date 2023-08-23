@@ -188,18 +188,8 @@ def plot_grid(p):
 
 
 def plot_velocity(p, name="velocity.eps"):
-    x = p.nodes3d.lon[:, 0, 0]
-    y = p.nodes3d.lat[0, :, 0]
-
-    s = p.nodes3d.xvel[:, :, 0]
-
-    pyplot.figure()
-    pyplot.contourf(x.value_in(units.deg), y.value_in(units.deg), s.T.value_in(units.m / units.s))
-    pyplot.colorbar()
-    y = y.value_in(units.deg)
-    pyplot.ylim(y[1], y[-2])
-    pyplot.savefig(name)
-    pyplot.close()
+    xvel = p.nodes3d.xvel[:, :, 0].value_in(units.m / units.s)
+    plot_globe(p, xvel, "m/s", name)
 
 
 def z_from_center(zc):
