@@ -168,12 +168,9 @@ def plot_sst(p, name="sst.eps"):
     plot_globe(p, sst, "°C", name)
 
 
-def plot_ssh(p, label="ssh"):
-    pyplot.figure()
-    pyplot.imshow(p.elements.ssh.value_in(units.m).T, origin="lower", vmin=-1, vmax=1)
-    pyplot.colorbar()
-    pyplot.savefig(label + ".png")
-    pyplot.close()
+def plot_ssh(p, name="ssh.eps"):
+    ssh = p.elements.ssh.value_in(units.m)
+    plot_globe(p, ssh, "m", name)
 
 
 def plot_grid(p):
