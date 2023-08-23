@@ -131,12 +131,16 @@ def evolve(p, tend=10 | units.day, dt=1.0 | units.day):
         print("evolve to", t, flush=True)
 
 
-def plot_globe(p, value, unit, name):
+def plot_globe(p, value, unit, name, elements=False):
     mask = p.elements.depth.value_in(units.km) == 0
     value = numpy.ma.array(value, mask=mask)
 
-    x = p.nodes3d.lon[:, 0, 0].value_in(units.deg)
-    y = p.nodes3d.lat[0, :, 0].value_in(units.deg)
+    if elements:
+        x = p.elements3d.lon[:, 0, 0].value_in(units.deg)
+        y = p.elements3d.lat[0, :, 0].value_in(units.deg)
+    else:
+        x = p.nodes3d.lon[:, 0, 0].value_in(units.deg)
+        y = p.nodes3d.lat[0, :, 0].value_in(units.deg)
 
     for i in range(len(x)):
         if x[i] > 180:
@@ -165,12 +169,12 @@ def plot_globe(p, value, unit, name):
 
 def plot_sst(p, name="sst.eps"):
     sst = p.elements.temperature.value_in(units.Celsius)
-    plot_globe(p, sst, "°C", name)
+    plot_globe(p, sst, "°C", name, elements=True)
 
 
 def plot_ssh(p, name="ssh.eps"):
     ssh = p.elements.ssh.value_in(units.m)
-    plot_globe(p, ssh, "m", name)
+    plot_globe(p, ssh, "m", name, elements=True)
 
 
 def plot_grid(p):
@@ -249,12 +253,12 @@ def plot_temperature(p, name="temperature.eps"):
 
 def plot_surface_salinity(p, name="surface_salinity.eps"):
     val = p.elements3d.salinity[:, :, 0].value_in(units.psu)
-    plot_globe(p, val, "psu", name)
+    plot_globe(p, val, "psu", name, elements=True)
 
 
 def plot_surface_temperature(p, name="surface_temperature.eps"):
     val = p.elements3d.temperature[:, :, 0].value_in(units.Celsius)
-    plot_globe(p, val, "°C", name)
+    plot_globe(p, val, "°C", name, elements=True)
 
 
 def plot_streamplot(p, name="streamplot.eps"):
