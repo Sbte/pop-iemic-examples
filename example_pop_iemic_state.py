@@ -23,8 +23,7 @@ def run(tend=10 | units.day, dt=1 | units.day):
 
     # dt = 10 | units.yr
     # tend = 5000 | units.yr
-    # pop.long_evolve(pop_instance, tend=tend, dt=dt)
-    pop.evolve_test(pop_instance, tend.value_in(units.day))
+    pop.long_evolve(pop_instance, tend=tend, dt=dt)
 
     pop.plot_ssh(pop_instance, "ssh_" + str(tend) + ".eps")
     pop.plot_velocity(pop_instance, "velocity_" + str(tend) + ".eps")
