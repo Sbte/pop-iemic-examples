@@ -34,6 +34,20 @@ lonmax = 360 | units.deg
 figsize = (7, 3.5)
 
 
+def z_from_center(zc):
+    z = numpy.zeros(len(zc) + 1) * zc[0]
+
+    direction = 1
+    if zc[0] <= zc[0] * 0:
+        direction = -1
+
+    for i, _zc in enumerate(zc[::direction]):
+        half = _zc - z[i]
+        z[i + 1] = z[i] + 2 * half
+
+    return z[::direction]
+
+
 def plot_forcings_and_depth(p, label="pop"):
     pyplot.figure()
     val = p.nodes.depth.value_in(units.km).T
@@ -189,20 +203,6 @@ def plot_grid(p):
 def plot_velocity(p, name="velocity.eps"):
     xvel = p.nodes3d.xvel[:, :, 0].value_in(units.m / units.s)
     plot_globe(p, xvel, "m/s", name)
-
-
-def z_from_center(zc):
-    z = numpy.zeros(len(zc) + 1) * zc[0]
-
-    direction = 1
-    if zc[0] <= zc[0] * 0:
-        direction = -1
-
-    for i, _zc in enumerate(zc[::direction]):
-        half = _zc - z[i]
-        z[i + 1] = z[i] + 2 * half
-
-    return z[::direction]
 
 
 def plot_salinity(p, name="salinity.eps"):
