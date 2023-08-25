@@ -31,8 +31,6 @@ lonmax = 360 | units.deg
 # lonmin = 0.75 | units.deg
 # lonmax = 360.75 | units.deg
 
-figsize = (7, 3.5)
-
 
 def z_from_center(zc):
     z = numpy.zeros(len(zc) + 1) * zc[0]
@@ -167,7 +165,7 @@ def plot_globe(p, value, unit, name, elements=False):
     x = x[i]
     x[0] -= 360
 
-    pyplot.figure(figsize=figsize)
+    pyplot.figure(figsize=(7, 3.5))
 
     pyplot.contourf(x, y, value.T)
 
