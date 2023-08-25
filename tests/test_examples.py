@@ -81,6 +81,15 @@ def test_pop_iemic_state():
 
     os.chdir('tests')
 
+    directory = 'snapshots'
+    if os.path.isdir(directory):
+        shutil.rmtree(directory)
+
     run(1 | units.day)
+
+    assert os.path.isfile(os.path.join(directory, 'state_000000_nodes3d.amuse'))
+    assert os.path.isfile(os.path.join(directory, 'state_000001_nodes3d.amuse'))
+    assert os.path.isfile(os.path.join(directory, 'latest_nodes3d.amuse'))
+    assert not os.path.isfile(os.path.join(directory, 'state_000002_nodes3d.amuse'))
 
     os.chdir('..')
