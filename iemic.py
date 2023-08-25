@@ -383,7 +383,7 @@ def get_grid_with_units(grid):
     uscale = 0.1 | units.m / units.s
     t0 = 15.0 | units.Celsius
     s0 = 35.0 | units.psu
-    pscale = 2 * omega0 * r0 * uscale * rho0
+    p_scale = 2 * omega0 * r0 * uscale * rho0
     s_scale = 1.0 | units.psu
     t_scale = 1 | units.Celsius
 
@@ -395,11 +395,29 @@ def get_grid_with_units(grid):
         # salt and temp need to account for mask
         # _salt = s0 * (mask == 0) + s_scale * salt
         # _temp = t0 * (mask == 0) + t_scale * temp
-        _salt = s0 + s_scale * salt
-        _temp = t0 + t_scale * temp
+
+        # _salt = s0 + s_scale * salt
+        # _temp = t0 + t_scale * temp
+        # _pressure = p_scale * pressure
+
+        # Obtain a mask that has at least one ocean point per row. If
+        # the entire row consists of land points, the mean will be
+        # zero, so pretend the entire row is ocean instead.
+        _mask = mask == 0
+        _mask[:, numpy.equal(numpy.any(_mask, 0), False)] = True
+
+        mean_salt = numpy.mean(salt, axis=0, where=_mask)
+        _salt = s0 + s_scale * (salt + (mask != 0) * mean_salt)
         _salt = quantities.as_vector_quantity(_salt)
+
+        mean_temp = numpy.mean(temp, axis=0, where=_mask)
+        _temp = t0 + t_scale * (temp + (mask != 0) * mean_temp)
+
+        mean_pressure = numpy.mean(pressure, axis=0, where=_mask)
+        _pressure = p_scale * (pressure + (mask != 0) * mean_pressure)
+
         return (
-            pscale * pressure,
+            _pressure,
             _salt,
             _temp,
         )
