@@ -8,7 +8,6 @@ def run(tend=10 | units.day, dt=1 | units.day):
     pop_instance = pop_iemic.initialize_pop(6)
 
     pop.plot_ssh(pop_instance)
-    pop.plot_sst(pop_instance)
     pop.plot_velocity(pop_instance)
     pop.plot_salinity(pop_instance)
     pop.plot_temperature(pop_instance)
@@ -22,7 +21,6 @@ def run(tend=10 | units.day, dt=1 | units.day):
     pop.long_evolve(pop_instance, tend=tend, dt=dt)
 
     pop.plot_ssh(pop_instance, "ssh_" + str(tend) + ".eps")
-    pop.plot_sst(pop_instance, "sst_" + str(tend) + ".eps")
     pop.plot_velocity(pop_instance, "velocity_" + str(tend) + ".eps")
     pop.plot_salinity(pop_instance, "salinity_" + str(tend) + ".eps")
     pop.plot_temperature(pop_instance, "temperature_" + str(tend) + ".eps")

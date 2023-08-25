@@ -167,11 +167,6 @@ def plot_globe(p, value, unit, name, elements=False):
     pyplot.close()
 
 
-def plot_sst(p, name="sst.eps"):
-    sst = p.elements.temperature.value_in(units.Celsius)
-    plot_globe(p, sst, "°C", name, elements=True)
-
-
 def plot_ssh(p, name="ssh.eps"):
     ssh = p.elements.ssh.value_in(units.m)
     plot_globe(p, ssh, "m", name, elements=True)
