@@ -485,12 +485,16 @@ def get_grid_with_units(grid):
 
 
 def get_forcing_with_units(i, grid):
+    source = grid.copy()
     result = grid.empty_copy()
 
-    channel = grid.new_channel_to(result)
+    channel = source.new_channel_to(result)
 
-    attributes = grid.get_attribute_names_defined_in_store()
+    attributes = source.get_attribute_names_defined_in_store()
     channel.copy_attributes([attr for attr in ["lon", "lat"] if attr in attributes])
+
+    mask = i.t_grid.mask[:, :, -1]
+    source.mask = mask
 
     # these are hardcoded in iemic!
     t0 = 15.0 | units.Celsius
@@ -505,8 +509,17 @@ def get_forcing_with_units(i, grid):
     def add_units_v(tau_x, tau_y):
         return (tau0 * tau_x, tau0 * tau_y)
 
-    def add_units_t(tatm, emip):
-        return (t0 + t_a * tatm, s0 + s_a * emip)
+    def add_units_t(mask, tatm, emip):
+        # FIXME: This is a hack since I-EMIC should just output the
+        # emip without landmask. See get_grid_with_units() on how it
+        # works.
+        _mask = mask == 0
+        _mask[:, numpy.equal(numpy.any(_mask, 0), False)] = True
+
+        mean_emip = numpy.mean(emip, axis=0, where=_mask)
+        _emip = s0 + s_a * (emip + (mask != 0) * mean_emip)
+
+        return (t0 + t_a * tatm, s0 + s_a * _emip)
 
     if "tau_x" in attributes:
         channel.transform(
@@ -528,6 +541,7 @@ def get_forcing_with_units(i, grid):
             ],
             add_units_t,
             [
+                "mask",
                 "tatm",
                 "emip",
             ],
