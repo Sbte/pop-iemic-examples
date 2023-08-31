@@ -1,9 +1,17 @@
 top_layer = []
-with open('global_120x54x12.mask') as f:
+nx = 240
+ny = 108
+nz = 12
+
+start = nx // 15
+west_na = int(nx / 1.375)
+east_na = int(nx / 1.2)
+
+with open(f'global_{nx}x{ny}x{nz}.mask') as f:
     # First parse the top layer
     started = False
     for l in f.readlines():
-        if l.startswith('% 120 54 12 13'):
+        if l.startswith(f'% {nx} {ny} {nz} 13'):
             started = True
             continue
 
@@ -13,23 +21,20 @@ with open('global_120x54x12.mask') as f:
         if l.startswith('%'):
             break
 
-        start = 8
-        end = 87
-        end2 = 100
-        for i in range(end, end2):
+        end = west_na
+        for i in range(west_na, east_na):
             if l[i] == '1':
                 break
             end += 1
         top_layer.append(l[:start] + '1' * (end - start) + l[end:])
 
 new = ''
-with open('global_120x54x12.mask') as f:
+with open(f'global_{nx}x{ny}x{nz}.mask') as f:
     # Now apply the top layer mask to all other layers
     for l in f.readlines():
         if l.startswith('%'):
             i = 0
-
-        if len(l) > 80:
+        else:
             for j, c in enumerate(l):
                 if top_layer[i][j] == '1':
                     new += '1'
@@ -40,5 +45,5 @@ with open('global_120x54x12.mask') as f:
 
         new += l
 
-with open('amoc_120x54x12.mask', 'w') as f:
+with open(f'amoc_{nx}x{ny}x{nz}.mask', 'w') as f:
     f.write(new)
