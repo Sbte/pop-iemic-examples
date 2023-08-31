@@ -1,1 +1,8 @@
 __pycache__
+*.eps
+*.png
+*.amuse
+*.xml
+.AMUSE*
+amuse.nml
+fort.*
