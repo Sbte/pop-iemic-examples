@@ -164,9 +164,12 @@ def amoc(pop_instance):
     try:
         pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
     except IoException:
-        iemic_state = iemic.get_amoc_state()
+        Nx, Ny, Nz = pop_instance.mode.split('x')
+        Ny = str(int(Ny) - 2)
 
-        amoc_pop_instance = initialize_pop(iemic_state=iemic_state)
+        mask = iemic.read_global_mask(f"mkmask/amoc_{Nx}x{Ny}x{Nz}.mask")
+
+        amoc_pop_instance = initialize_pop(iemic_mask=mask)
 
         assert amoc_pop_instance.mode == pop_instance.mode
 
