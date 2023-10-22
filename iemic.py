@@ -332,11 +332,14 @@ def load_iemic_state(i, label, directory="./", load_parameters=True, copy_forcin
     if load_parameters:
         i.load_xml_parameters("Ocean", os.path.join(directory, label + "_parameters.xml"))
 
+        # If we load a state, we shouldn't adjust the land mask
+        i.parameters.Ocean__Analyze_Jacobian = False
+
     channel = iemic_state.v_grid.new_channel_to(i.v_grid)
     channel.copy_attributes(["u_velocity", "v_velocity", "w_velocity"])
 
     channel = iemic_state.t_grid.new_channel_to(i.t_grid)
-    channel.copy_attributes(["pressure", "temperature", "salinity"])
+    channel.copy_attributes(["pressure", "temperature", "salinity", "mask"])
 
     if not copy_forcing:
         return
