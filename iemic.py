@@ -522,7 +522,7 @@ def get_forcing_with_units(i, grid):
         mean_emip = numpy.mean(emip, axis=0, where=_mask)
         _emip = s0 + s_a * (emip + (mask != 0) * mean_emip)
 
-        return (t0 + t_a * tatm, s0 + s_a * _emip)
+        return (t0 + t_a * tatm, _emip)
 
     if "tau_x" in attributes:
         channel.transform(
