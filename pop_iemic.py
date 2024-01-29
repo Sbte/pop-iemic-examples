@@ -31,16 +31,21 @@ def reset_pop_state_from_iemic_state(pop_instance, iemic_state):
     ssh = iemic.get_ssh(iemic_state)
     channel1 = ssh.new_remapping_channel_to(pop_instance.elements, bilinear_2D_remapper)
     channel1.copy_attributes(["ssh"])
+    channel1.copy_attributes(["ssh"], target_names=["ssh_old"])
+    channel1.copy_attributes(["ssh"], target_names=["ssh_guess"])
 
     barotropic_velocities = iemic.get_barotropic_velocities(iemic_state)
     channel2 = barotropic_velocities.new_remapping_channel_to(pop_instance.nodes, bilinear_2D_remapper)
     channel2.copy_attributes(["uvel_barotropic", "vvel_barotropic"], target_names=["vx_barotropic", "vy_barotropic"])
+    channel2.copy_attributes(["uvel_barotropic", "vvel_barotropic"], target_names=["vx_barotropic_old", "vy_barotropic_old"])
 
     channel3 = v_state.new_remapping_channel_to(pop_instance.nodes3d, bilinear_2D_remapper_3D)
     channel3.copy_attributes(["u_velocity", "v_velocity"], target_names=["xvel", "yvel"])
+    channel3.copy_attributes(["u_velocity", "v_velocity"], target_names=["xvel_old", "yvel_old"])
 
     channel4 = t_state.new_remapping_channel_to(pop_instance.elements3d, bilinear_2D_remapper_3D)
     channel4.copy_attributes(["salinity", "temperature"])
+    channel4.copy_attributes(["salinity", "temperature"], target_names=["salinity_old", "temperature_old"])
 
 
 def reset_pop_forcing_from_iemic_state(pop_instance, iemic_state):
