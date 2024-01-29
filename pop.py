@@ -413,17 +413,24 @@ def reset_pop_state(p, label, snapdir="snapshots"):
 
     channel1 = nodes.new_channel_to(p.nodes)
     channel1.copy_attributes(["gradx", "grady", "vx_barotropic", "vy_barotropic"])
+    channel1.copy_attributes(["gradx_old", "grady_old", "vx_barotropic_old", "vy_barotropic_old"])
     # channel1.copy_attributes(["vx_barotropic", "vy_barotropic"])
 
     channel2 = nodes3d.new_channel_to(p.nodes3d)
     channel2.copy_attributes(["xvel", "yvel"])
+    channel2.copy_attributes(["xvel_old", "yvel_old"])
 
     channel3 = elements3d.new_channel_to(p.elements3d)
     channel3.copy_attributes(["rho", "salinity", "temperature"])
+    channel3.copy_attributes(["rho_old", "salinity_old", "temperature_old"])
     # channel3.copy_attributes(["salinity", "temperature"])
 
     channel1 = elements.new_channel_to(p.elements)
     channel1.copy_attributes(["ssh"])
+    channel1.copy_attributes(["ssh_old", "ssh_guess"])
+
+    p.parameters.pressure_correction = False
+    p.parameters.ts_option = "amuse"
 
     # p.parameters.reinit_gradp = True
     # p.parameters.reinit_rho = True
