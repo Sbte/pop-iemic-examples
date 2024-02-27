@@ -203,25 +203,43 @@ def plot_velocity(p, name="velocity.eps"):
     plot_globe(p, xvel, "m/s", name)
 
 
-def plot_salinity(p, name="salinity.eps"):
-    z = p.nodes3d.z[0, 0, :]
-    y = p.nodes3d.lat[0, :, 0]
+def plot_meridional_average(p, value, unit, name):
+    z = p.elements3d.z[0, 0, :]
 
-    salinity = p.elements3d.salinity
-    val = salinity[0, :, :]
-    for i in range(1, salinity.shape[0]):
-        val += salinity[i, :, :]
+    mask = [numpy.max(p.elements.depth.value_in(units.km), axis=0) < zi for zi in z.value_in(units.km)]
+    mask = numpy.array(mask).T
 
-    val = val / salinity.shape[0]
-    val = quantities.as_vector_quantity(val)
+    depth = p.elements.depth
+
+    avg = value[0, :, :] * 0
+    scaling = value[0, :, :] * 0
+
+    for i, j, k in numpy.ndindex(*value.shape):
+        if depth[i, j] > z[k]:
+            avg[j, k] += value[i, j, k]
+            scaling[j, k] += 1
+
+    scaling[mask] = 1
+    avg /= scaling
+
+    avg = numpy.ma.array(avg, mask=mask)
+
+    y = p.elements3d.lat[0, :, 0].value_in(units.deg)
+    z = p.elements3d.z[0, 0, :].value_in(units.m)
 
     pyplot.figure()
-    pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), val.T.value_in(units.psu))
-    pyplot.colorbar()
-    y = y.value_in(units.deg)
+    pyplot.contourf(y, -z, avg.T)
+    pyplot.xticks([-60, -30, 0, 30, 60],
+                  ['60°S', '30°S', '0°', '30°N', '60°N'])
+    pyplot.colorbar(label=unit)
     pyplot.xlim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
+
+
+def plot_salinity(p, name="salinity.eps"):
+    salinity = p.elements3d.salinity.value_in(units.psu)
+    plot_meridional_average(p, salinity, "psu", name)
 
 
 def plot_temperature(p, name="temperature.eps"):
