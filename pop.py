@@ -243,23 +243,8 @@ def plot_salinity(p, name="salinity.eps"):
 
 
 def plot_temperature(p, name="temperature.eps"):
-    z = p.nodes3d.z[0, 0, :]
-    y = p.nodes3d.lat[0, :, 0]
-
-    temperature = p.elements3d.temperature
-    val = temperature[0, :, :]
-    for i in range(1, temperature.shape[0]):
-        val += temperature[i, :, :]
-
-    val = val / temperature.shape[0]
-
-    pyplot.figure()
-    pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), val.T.value_in(units.Celsius))
-    pyplot.colorbar()
-    y = y.value_in(units.deg)
-    pyplot.xlim(y[1], y[-2])
-    pyplot.savefig(name)
-    pyplot.close()
+    temperature = p.elements3d.temperature.value_in(units.Celsius)
+    plot_meridional_average(p, temperature, "°C", name)
 
 
 def plot_surface_salinity(p, name="surface_salinity.eps"):
