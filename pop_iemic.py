@@ -67,7 +67,7 @@ def compute_depth_index(iemic_state, number_of_workers=4):
     depth = numpy.zeros((pop.Nx, pop.Ny))
 
     pop_instance = pop.initialize_pop(
-        levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", latmin=pop.latmin, latmax=pop.latmax, number_of_workers=number_of_workers
+        levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", number_of_workers=number_of_workers
     )
 
     iemic_surface = iemic_state.t_grid[:, :, -1]
@@ -97,7 +97,7 @@ def compute_depth_index(iemic_state, number_of_workers=4):
 def compute_depth_index_from_mask(mask):
     levels = iemic.depth_levels(13) * 5000 | units.m
 
-    depth = numpy.zeros((pop.Nx, pop.Ny), dtype=int)
+    depth = numpy.zeros((mask.shape[0], mask.shape[1] + 2), dtype=int)
     for k in range(mask.shape[2]):
         for j in range(mask.shape[1]):
             for i in range(mask.shape[0]):
@@ -117,9 +117,11 @@ def initialize_pop(number_of_workers=6, iemic_state=None, iemic_mask=None):
     else:
         levels, depth = compute_depth_index(iemic_state)
 
+    Nx = depth.shape[0]
+    Ny = depth.shape[1]
+
     pop_instance = pop.initialize_pop(
-        levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", number_of_workers=number_of_workers, latmin=pop.latmin, latmax=pop.latmax
-    )
+        levels, depth, mode=f"{Nx}x{Ny}x12", number_of_workers=number_of_workers)
 
     reset_pop_forcing_from_iemic_state(pop_instance, iemic_state)
 
