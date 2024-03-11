@@ -20,13 +20,6 @@ bilinear_2D_remapper = partial(bilinear_2D_remapper, check_inside=False, x_perio
 bilinear_2D_remapper_3D = partial(bilinear_2D_remapper, check_inside=False, do_slices=True, x_periodic=True)
 
 
-Nx = 120
-Ny = 56
-
-# Nx = 240
-# Ny = 110
-
-
 def z_from_center(zc):
     z = numpy.zeros(len(zc) + 1) * zc[0]
 
@@ -80,17 +73,12 @@ def plot_forcings_and_depth(p, label="pop"):
     pyplot.close()
 
 
-def initialize_pop(depth_levels, depth_array, mode=f"{Nx}x{Ny}x12", number_of_workers=6):
+def initialize_pop(depth_levels, depth_array, mode=None, number_of_workers=6):
     print(f"initializing POP mode {mode} with {number_of_workers} workers")
 
-    p = POP(
-        number_of_workers=number_of_workers, mode=mode, redirection="none"
-    )  # , job_scheduler="slurm") #, channel_type="sockets"
-
-    dz = depth_levels[1:] - depth_levels[:-1]
-    # print(f"dz: {dz}")
-
     Nx = depth_array.shape[0]
+    Ny = depth_array.shape[1]
+
     if Nx == 120:
         latmin = -84 | units.deg
         latmax = 84 | units.deg
@@ -103,6 +91,16 @@ def initialize_pop(depth_levels, depth_array, mode=f"{Nx}x{Ny}x12", number_of_wo
 
         lonmin = 0.75 | units.deg
         lonmax = 360.75 | units.deg
+
+    if mode is None:
+        mode = f"{Nx}x{Ny}x12"
+
+    p = POP(
+        number_of_workers=number_of_workers, mode=mode, redirection="none"
+    )  # , job_scheduler="slurm") #, channel_type="sockets"
+
+    dz = depth_levels[1:] - depth_levels[:-1]
+    # print(f"dz: {dz}")
 
     p.parameters.topography_option = "amuse"
     p.parameters.depth_index = depth_array

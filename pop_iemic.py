@@ -56,7 +56,7 @@ def reset_pop_forcing_from_iemic_state(pop_instance, iemic_state):
     channel.copy_attributes(["tatm", "emip"], target_names=["restoring_temp", "restoring_salt"])
 
 
-def compute_depth_index(iemic_state, number_of_workers=4):
+def compute_depth_index(iemic_state, Nx, Ny, number_of_workers=4):
     mask = iemic_state.t_grid.mask
 
     # We get the levels directly instead because of the way i-emic calculates them
@@ -64,10 +64,10 @@ def compute_depth_index(iemic_state, number_of_workers=4):
     z = iemic.z_from_center(z)
     levels = -z[::-1]
 
-    depth = numpy.zeros((pop.Nx, pop.Ny))
+    depth = numpy.zeros((Nx, Ny))
 
     pop_instance = pop.initialize_pop(
-        levels, depth, mode=f"{pop.Nx}x{pop.Ny}x12", number_of_workers=number_of_workers
+        levels, depth, mode=f"{Nx}x{Ny}x12", number_of_workers=number_of_workers
     )
 
     iemic_surface = iemic_state.t_grid[:, :, -1]
@@ -115,7 +115,7 @@ def initialize_pop(number_of_workers=6, iemic_state=None, iemic_mask=None):
     if iemic_mask is not None:
         levels, depth = compute_depth_index_from_mask(iemic_mask)
     else:
-        levels, depth = compute_depth_index(iemic_state)
+        levels, depth = compute_depth_index(iemic_state, 120, 56)
 
     Nx = depth.shape[0]
     Ny = depth.shape[1]
