@@ -20,7 +20,7 @@ def run(tend=10 | units.day, dt=1 | units.day, argv=[]):
                 label = f[:12]
                 break
     else:
-        label = "state_{0:06}".format(argv[2])
+        label = "state_{0:06}".format(int(argv[2]))
 
     pop_instance = pop_iemic.initialize_pop()
 
