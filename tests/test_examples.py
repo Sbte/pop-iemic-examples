@@ -55,6 +55,23 @@ def test_pop():
     os.chdir('..')
 
 
+def test_pop_pop_state():
+    from example_pop_pop_state import run
+
+    os.chdir('tests')
+
+    directory = 'snapshots-2'
+
+    run(1 | units.day)
+
+    assert os.path.isfile(os.path.join(directory, 'state_000000_nodes3d.amuse'))
+    assert os.path.isfile(os.path.join(directory, 'state_000001_nodes3d.amuse'))
+    assert os.path.isfile(os.path.join(directory, 'latest_nodes3d.amuse'))
+    assert not os.path.isfile(os.path.join(directory, 'state_000002_nodes3d.amuse'))
+
+    os.chdir('..')
+
+
 def test_restart_pop():
     from example_restart_pop import run
 

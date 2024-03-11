@@ -5,13 +5,19 @@ import time
 from matplotlib import pyplot
 
 from omuse.community.pop.interface import POP
-from omuse.units import units, constants, quantities
+from omuse.units import units, constants
 
 from amuse.io import write_set_to_file, read_set_from_file
+from amuse.ext.grid_remappers import bilinear_2D_remapper
+
+from functools import partial
 
 import bstream
 
 numpy.random.seed(123451)
+
+bilinear_2D_remapper = partial(bilinear_2D_remapper, check_inside=False, x_periodic=True)
+bilinear_2D_remapper_3D = partial(bilinear_2D_remapper, check_inside=False, do_slices=True, x_periodic=True)
 
 
 Nx = 120
@@ -441,6 +447,35 @@ def reset_pop_state(p, label, snapdir="snapshots"):
 
     # p.parameters.reinit_gradp = True
     # p.parameters.reinit_rho = True
+
+
+def reset_pop_state_from_pop_state(p, label, snapdir="snapshots"):
+    nodes = read_set_from_file(os.path.join(snapdir, label + "_nodes.amuse"), "amuse")
+    nodes3d = read_set_from_file(os.path.join(snapdir, label + "_nodes3d.amuse"), "amuse")
+    elements = read_set_from_file(os.path.join(snapdir, label + "_elements.amuse"), "amuse")
+    elements3d = read_set_from_file(os.path.join(snapdir, label + "_elements3d.amuse"), "amuse")
+
+    channel1 = nodes.new_channel_to(p.nodes, bilinear_2D_remapper)
+    channel1.copy_attributes(["gradx", "grady", "vx_barotropic", "vy_barotropic"])
+    channel1.copy_attributes(["gradx_old", "grady_old", "vx_barotropic_old", "vy_barotropic_old"])
+
+    channel2 = nodes3d.new_channel_to(p.nodes3d, bilinear_2D_remapper_3D)
+    channel2.copy_attributes(["xvel", "yvel"])
+    channel2.copy_attributes(["xvel_old", "yvel_old"])
+
+    channel3 = elements3d.new_channel_to(p.elements3d, bilinear_2D_remapper_3D)
+    channel3.copy_attributes(["rho", "salinity", "temperature"])
+    channel3.copy_attributes(["rho_old", "salinity_old", "temperature_old"])
+
+    channel1 = elements.new_channel_to(p.elements, bilinear_2D_remapper)
+    channel1.copy_attributes(["ssh"])
+    channel1.copy_attributes(["ssh_old", "ssh_guess"])
+
+    p.parameters.pressure_correction = True
+    p.parameters.ts_option = "amuse"
+
+    p.parameters.reinit_gradp = True
+    p.parameters.reinit_rho = True
 
 
 def read_pop_state(label, directory="./"):

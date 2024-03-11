@@ -169,6 +169,19 @@ def initialize_pop_with_iemic_setup(number_of_workers=6, state_name=state_name, 
     return pop_instance
 
 
+def initialize_pop_with_pop_setup(number_of_workers=6, label="latest",
+                                  snapdir="snapshots", iemic_mask=None):
+    pop_instance = initialize_pop(number_of_workers, iemic_mask=iemic_mask)
+
+    print("before reset")
+
+    pop.reset_pop_state_from_pop_state(pop_instance, label, snapdir)
+
+    print("after reset")
+
+    return pop_instance
+
+
 def amoc(pop_instance):
     try:
         pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
