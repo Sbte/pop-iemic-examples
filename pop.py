@@ -16,20 +16,9 @@ numpy.random.seed(123451)
 
 Nx = 120
 Ny = 56
-latmin = -84 | units.deg
-latmax = 84 | units.deg
-
-lonmin = 0 | units.deg
-lonmax = 360 | units.deg
 
 # Nx = 240
 # Ny = 110
-
-# latmin = -81.75 | units.deg
-# latmax = 83.25 | units.deg
-
-# lonmin = 0.75 | units.deg
-# lonmax = 360.75 | units.deg
 
 
 def z_from_center(zc):
@@ -94,6 +83,20 @@ def initialize_pop(depth_levels, depth_array, mode=f"{Nx}x{Ny}x12", number_of_wo
 
     dz = depth_levels[1:] - depth_levels[:-1]
     # print(f"dz: {dz}")
+
+    Nx = depth_array.shape[0]
+    if Nx == 120:
+        latmin = -84 | units.deg
+        latmax = 84 | units.deg
+
+        lonmin = 0 | units.deg
+        lonmax = 360 | units.deg
+    elif Nx == 240:
+        latmin = -81.75 | units.deg
+        latmax = 83.25 | units.deg
+
+        lonmin = 0.75 | units.deg
+        lonmax = 360.75 | units.deg
 
     p.parameters.topography_option = "amuse"
     p.parameters.depth_index = depth_array
