@@ -106,6 +106,7 @@ def initialize_pop(depth_levels, depth_array, mode=f"{Nx}x{Ny}x12", number_of_wo
     p.parameters.vertical_layer_thicknesses = dz
     p.parameters.surface_heat_flux_forcing = "amuse"
     p.parameters.surface_freshwater_flux_forcing = "amuse"
+    p.parameters.ts_option = "amuse"
 
     # print(p.nodes[0,0].lon.in_(units.deg))
     # print(p.nodes[0,0].lat.in_(units.deg))
@@ -433,7 +434,7 @@ def reset_pop_state(p, label, snapdir="snapshots"):
     channel1.copy_attributes(["ssh_old", "ssh_guess"])
 
     p.parameters.pressure_correction = False
-    p.parameters.ts_option = "amuse"
+    p.parameters.ts_option = "amuse_restart"
 
     # p.parameters.reinit_gradp = True
     # p.parameters.reinit_rho = True

@@ -159,8 +159,10 @@ def initialize_pop_with_iemic_setup(number_of_workers=6, state_name=state_name, 
 
     print("after reset")
 
+    pop_instance.parameters.pressure_correction = True
     pop_instance.parameters.reinit_gradp = True
     pop_instance.parameters.reinit_rho = True
+    pop_instance.parameters.ts_option = "amuse"
 
     return pop_instance
 
