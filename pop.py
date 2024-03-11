@@ -85,7 +85,7 @@ def plot_forcings_and_depth(p, label="pop"):
     pyplot.close()
 
 
-def initialize_pop(depth_levels, depth_array, mode=f"{Nx}x{Ny}x12", number_of_workers=6, latmin=latmin, latmax=latmax):
+def initialize_pop(depth_levels, depth_array, mode=f"{Nx}x{Ny}x12", number_of_workers=6):
     print(f"initializing POP mode {mode} with {number_of_workers} workers")
 
     p = POP(
