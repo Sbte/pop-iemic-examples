@@ -453,19 +453,19 @@ def reset_pop_state_from_pop_state(p, label, snapdir="snapshots"):
     elements = read_set_from_file(os.path.join(snapdir, label + "_elements.amuse"), "amuse")
     elements3d = read_set_from_file(os.path.join(snapdir, label + "_elements3d.amuse"), "amuse")
 
-    channel1 = nodes.new_channel_to(p.nodes, bilinear_2D_remapper)
+    channel1 = nodes.new_remapping_channel_to(p.nodes, bilinear_2D_remapper)
     channel1.copy_attributes(["gradx", "grady", "vx_barotropic", "vy_barotropic"])
     channel1.copy_attributes(["gradx_old", "grady_old", "vx_barotropic_old", "vy_barotropic_old"])
 
-    channel2 = nodes3d.new_channel_to(p.nodes3d, bilinear_2D_remapper_3D)
+    channel2 = nodes3d.new_remapping_channel_to(p.nodes3d, bilinear_2D_remapper_3D)
     channel2.copy_attributes(["xvel", "yvel"])
     channel2.copy_attributes(["xvel_old", "yvel_old"])
 
-    channel3 = elements3d.new_channel_to(p.elements3d, bilinear_2D_remapper_3D)
+    channel3 = elements3d.new_remapping_channel_to(p.elements3d, bilinear_2D_remapper_3D)
     channel3.copy_attributes(["rho", "salinity", "temperature"])
     channel3.copy_attributes(["rho_old", "salinity_old", "temperature_old"])
 
-    channel1 = elements.new_channel_to(p.elements, bilinear_2D_remapper)
+    channel1 = elements.new_remapping_channel_to(p.elements, bilinear_2D_remapper)
     channel1.copy_attributes(["ssh"])
     channel1.copy_attributes(["ssh_old", "ssh_guess"])
 
