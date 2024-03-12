@@ -448,10 +448,52 @@ def reset_pop_state(p, label, snapdir="snapshots"):
 
 
 def reset_pop_state_from_pop_state(p, label, snapdir="snapshots"):
-    nodes = read_set_from_file(os.path.join(snapdir, label + "_nodes.amuse"), "amuse")
-    nodes3d = read_set_from_file(os.path.join(snapdir, label + "_nodes3d.amuse"), "amuse")
-    elements = read_set_from_file(os.path.join(snapdir, label + "_elements.amuse"), "amuse")
-    elements3d = read_set_from_file(os.path.join(snapdir, label + "_elements3d.amuse"), "amuse")
+    old_state = read_pop_state(label, snapdir)
+
+    # FIXME: For some reason we need to call [:, :, :].copy() here,
+    # otherwise the grids don't derive from RegularBaseGrid.
+    nodes = old_state.nodes[:, :].copy()
+    nodes3d = old_state.nodes3d[:, :, :].copy()
+    elements = old_state.elements[:, :].copy()
+    elements3d = old_state.elements3d[:, :, :].copy()
+
+    # Now we need a transformation to set values at points that were
+    # previously land points
+
+    z = elements3d.z[0, 0, :]
+    mask = numpy.stack(
+        [elements.depth.value_in(units.km) > zi for zi in z.value_in(units.km)],
+        axis=-1)
+
+    def transform(quantity):
+        # Obtain a mask that has at least one ocean point per row. If
+        # the entire row consists of land points, the mean will be
+        # zero, so pretend the entire row is ocean instead.
+        _mask = mask.copy()
+        _mask[:, numpy.equal(numpy.any(mask, axis=0), False)] = True
+
+        mean = numpy.mean(quantity, axis=0, where=_mask)
+        return (quantity + numpy.equal(mask, False) * mean, )
+
+    channel = elements3d.new_channel_to(elements3d)
+    channel.transform(["rho"], transform, ["rho"])
+    channel.transform(["salinity"], transform, ["salinity"])
+    channel.transform(["temperature"], transform, ["temperature"])
+
+    def transform(quantity):
+        # Obtain a mask that has at least one ocean point per row. If
+        # the entire row consists of land points, the mean will be
+        # zero, so pretend the entire row is ocean instead.
+        _mask = mask[:, :, 0].copy()
+        _mask[:, numpy.equal(numpy.any(mask[:, :, 0], axis=0), False)] = True
+
+        mean = numpy.mean(quantity, axis=0, where=_mask)
+        return (quantity + numpy.equal(mask[:, :, 0], False) * mean, )
+
+    channel = elements.new_channel_to(elements)
+    channel.transform(["ssh"], transform, ["ssh"])
+    channel.transform(["ssh_old"], transform, ["ssh_old"])
+    channel.transform(["ssh_guess"], transform, ["ssh_guess"])
 
     channel1 = nodes.new_remapping_channel_to(p.nodes, bilinear_2D_remapper)
     channel1.copy_attributes(["gradx", "grady", "vx_barotropic", "vy_barotropic"])

@@ -407,7 +407,7 @@ def get_grid_with_units(grid):
         # the entire row consists of land points, the mean will be
         # zero, so pretend the entire row is ocean instead.
         _mask = mask == 0
-        _mask[:, numpy.equal(numpy.any(_mask, 0), False)] = True
+        _mask[:, numpy.equal(numpy.any(_mask, axis=0), False)] = True
 
         mean_salt = numpy.mean(salt, axis=0, where=_mask)
         _salt = s0 + s_scale * (salt + (mask != 0) * mean_salt)
