@@ -239,8 +239,11 @@ def plot_meridional_average(p, value, unit, name):
     pyplot.contourf(y, -z, avg.T)
     pyplot.xticks([-60, -30, 0, 30, 60],
                   ['60°S', '30°S', '0°', '30°N', '60°N'])
-    pyplot.colorbar(label=unit)
     pyplot.xlim(y[1], y[-2])
+    yticks = [0, -1000, -2000, -3000, -4000, -5000]
+    pyplot.yticks(yticks, [str(int(abs(i))) for i in yticks])
+    pyplot.ylabel('Depth (m)')
+    pyplot.colorbar(label=unit)
     pyplot.savefig(name)
     pyplot.close()
 
