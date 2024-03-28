@@ -151,6 +151,47 @@ def evolve(p, tend=10 | units.day, dt=1.0 | units.day):
         print("evolve to", t, flush=True)
 
 
+def plot_masked_contour(x, y, value, unit):
+    plot = pyplot.contourf(x, y, value)
+    pyplot.close()
+
+    ticks = None
+    levels = None
+    color = 'viridis'
+    map_color = 'binary'
+
+    # Center the plot_levels if necessary
+    if plot.levels[0] < 0 and plot.levels[-1] > 0:
+        for step in [20, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01]:
+            prev_levels = levels
+
+            # Always center on the same color
+            lim = max(plot.levels[-1] + step, -plot.levels[0] + step)
+
+            levels = numpy.arange(step, lim, step * 2)
+            levels = numpy.append(-levels[::-1], levels)
+
+            if len(levels) > 12:
+                levels = prev_levels
+                break
+            elif len(levels) > 10:
+                ticks = numpy.arange(step * 3, lim, step * 4)
+                ticks = numpy.append(-ticks[::-1], ticks)
+                ticks = numpy.insert(ticks, len(ticks) // 2, 0)
+            else:
+                ticks = levels
+
+        color = 'RdBu'
+        map_color = 'binary'
+
+    pyplot.figure(figsize=(7, 3.5))
+
+    pyplot.contourf(x, y, numpy.ma.array(value.data * 0, mask=~value.mask), cmap=map_color)
+    pyplot.contourf(x, y, value, cmap=color, levels=levels, extend='both')
+
+    pyplot.colorbar(label=unit, ticks=ticks)
+
+
 def plot_globe(p, value, unit, name, elements=False):
     mask = p.elements.depth.value_in(units.km) == 0
     value = numpy.ma.array(value, mask=mask)
@@ -173,15 +214,12 @@ def plot_globe(p, value, unit, name, elements=False):
     x = x[i]
     x[0] -= 360
 
-    pyplot.figure(figsize=(7, 3.5))
-
-    pyplot.contourf(x, y, value.T)
+    plot_masked_contour(x, y, value.T, unit)
 
     pyplot.xticks([-180, -120, -60, 0, 60, 120, 180],
                   ['180°W', '120°W', '60°W', '0°', '60°E', '120°E', '180°E'])
     pyplot.yticks([-60, -30, 0, 30, 60],
                   ['60°S', '30°S', '0°', '30°N', '60°N'])
-    pyplot.colorbar(label=unit)
     pyplot.ylim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
