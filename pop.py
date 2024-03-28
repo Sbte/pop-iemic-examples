@@ -212,12 +212,12 @@ def plot_velocity(p, name="velocity.eps"):
 
 
 def plot_meridional_average(p, value, unit, name):
-    z = p.elements3d.z[0, 0, :]
+    z = p.elements3d.z[0, 0, :].value_in(units.m)
 
-    mask = [numpy.max(p.elements.depth.value_in(units.km), axis=0) < zi for zi in z.value_in(units.km)]
+    depth = p.elements.depth.value_in(units.m)
+
+    mask = [numpy.max(depth, axis=0) < zi for zi in z]
     mask = numpy.array(mask).T
-
-    depth = p.elements.depth
 
     avg = value[0, :, :] * 0
     scaling = value[0, :, :] * 0
@@ -233,7 +233,6 @@ def plot_meridional_average(p, value, unit, name):
     avg = numpy.ma.array(avg, mask=mask)
 
     y = p.elements3d.lat[0, :, 0].value_in(units.deg)
-    z = p.elements3d.z[0, 0, :].value_in(units.m)
 
     pyplot.figure()
     pyplot.contourf(y, -z, avg.T)
