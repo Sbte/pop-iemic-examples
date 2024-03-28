@@ -223,26 +223,27 @@ def plot_amoc(pop_instance, name="amoc.eps"):
 
     pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
 
-    y = pop_instance.nodes3d.lat[0, :, 0]
-    yi = [i for i, v in enumerate(y) if v.value_in(units.deg) > -30]
+    y = pop_instance.nodes3d.lat[0, :, 0].value_in(units.deg)
+    yi = [i for i, v in enumerate(y) if v > -30]
     y = y[yi]
 
-    z = pop_amoc_state.nodes3d.z[0, 0, :]
+    z = pop_amoc_state.nodes3d.z[0, 0, :].value_in(units.m)
     z = pop.z_from_center(z)
 
-    mask = [numpy.max(pop_amoc_state.elements.depth.value_in(units.km), axis=0) < zi for zi in z.value_in(units.km)]
+    depth = pop_amoc_state.elements.depth.value_in(units.m)
+
+    mask = [numpy.max(depth, axis=0) < zi for zi in z]
     mask = numpy.array(mask).T
     mask = mask[yi, :]
 
     val = numpy.ma.array(psim, mask=mask)
 
-    pyplot.figure(figsize=(7, 3.5))
-    pyplot.contourf(y.value_in(units.deg), -z.value_in(units.m), val.T)
+    pop.plot_masked_contour(y, -z, val.T, 'Sv')
+
     pyplot.xticks([-20, 0, 20, 40, 60], ['20°S', '0°', '20°N', '40°N', '60°N'])
     pyplot.xlim(-30, 70)
     yticks = [0, -1000, -2000, -3000, -4000, -5000]
     pyplot.yticks(yticks, [str(int(abs(i))) for i in yticks])
     pyplot.ylabel('Depth (m)')
-    pyplot.colorbar(label='Sv')
     pyplot.savefig(name)
     pyplot.close()
