@@ -2,7 +2,7 @@ import os
 import shutil
 import numpy
 import time
-from matplotlib import pyplot
+from matplotlib import colors, pyplot, colormaps
 
 from omuse.community.pop.interface import POP
 from omuse.units import units, constants
@@ -151,43 +151,59 @@ def evolve(p, tend=10 | units.day, dt=1.0 | units.day):
         print("evolve to", t, flush=True)
 
 
-def plot_masked_contour(x, y, value, unit):
+def plot_masked_contour(x, y, value, unit, lims=None):
     plot = pyplot.contourf(x, y, value)
     pyplot.close()
 
     ticks = None
     levels = None
-    color = 'viridis'
-    map_color = 'binary'
+    colormap = 'viridis'
 
     # Center the plot_levels if necessary
     if plot.levels[0] < 0 and plot.levels[-1] > 0:
+        if lims is None:
+            # Always center on the same color
+            lim = max(plot.levels[-1], -plot.levels[0])
+            lims = [-lim, lim]
+
         for step in [20, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01]:
             prev_levels = levels
 
-            # Always center on the same color
-            lim = max(plot.levels[-1] + step, -plot.levels[0] + step)
+            lower = lims[0] - step
+            upper = lims[1] + step
 
-            levels = numpy.arange(step, lim, step * 2)
-            levels = numpy.append(-levels[::-1], levels)
+            levels = numpy.arange(-step, lower, -step * 2)[::-1]
+            levels = numpy.append(levels, numpy.arange(step, upper, step * 2))
 
             if len(levels) > 12:
                 levels = prev_levels
                 break
             elif len(levels) > 10:
-                ticks = numpy.arange(step * 3, lim, step * 4)
-                ticks = numpy.append(-ticks[::-1], ticks)
+                ticks = numpy.arange(-step * 3, lower, -step * 4)[::-1]
+                ticks = numpy.append(ticks, numpy.arange(step * 3, upper, step * 4))
                 ticks = numpy.insert(ticks, len(ticks) // 2, 0)
             else:
                 ticks = levels
 
-        color = 'RdBu'
-        map_color = 'binary'
+        lim = max(-lims[0], lims[1])
+        norm = colors.Normalize(-lim, lim)
+
+        colormap = colormaps['RdBu_r']
+
+        under = None
+        if lim > -lims[0]:
+            under = colormap((lims[0] + lim) / (2 * lim))
+
+        over = None
+        if lim > lims[1]:
+            over = colormap((lims[1] + lim) / (2 * lim))
+
+        colormap = colormap.with_extremes(under=under, over=over)
 
     pyplot.figure(figsize=(7, 3.5))
 
-    pyplot.contourf(x, y, numpy.ma.array(value.data * 0, mask=~value.mask), cmap=map_color)
-    pyplot.contourf(x, y, value, cmap=color, levels=levels, extend='both')
+    pyplot.contourf(x, y, numpy.ma.array(value.data * 0, mask=~value.mask), cmap='binary')
+    pyplot.contourf(x, y, value, cmap=colormap, norm=norm, levels=levels, extend='both')
 
     pyplot.colorbar(label=unit, ticks=ticks)
 
