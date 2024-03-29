@@ -2,7 +2,7 @@ import os
 import shutil
 import numpy
 import time
-from matplotlib import colors, pyplot, colormaps
+from matplotlib import colors, pyplot, colormaps, ticker
 
 from omuse.community.pop.interface import POP
 from omuse.units import units, constants
@@ -151,8 +151,8 @@ def evolve(p, tend=10 | units.day, dt=1.0 | units.day):
         print("evolve to", t, flush=True)
 
 
-def plot_masked_contour(x, y, value, unit, lims=None):
-    plot = pyplot.contourf(x, y, value)
+def plot_masked_contour(x, y, value, unit, lims=None, levels=None):
+    plot = pyplot.contourf(x, y, value, levels=levels)
     pyplot.close()
 
     ticks = None
@@ -162,34 +162,23 @@ def plot_masked_contour(x, y, value, unit, lims=None):
     # Center the plot_levels if necessary
     if plot.levels[0] < 0 and plot.levels[-1] > 0:
         if lims is None:
-            # Always center on the same color
-            lim = max(plot.levels[-1], -plot.levels[0])
-            lims = [-lim, lim]
+            lims = (plot.levels[0], plot.levels[-1])
 
-        for step in [20, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01]:
-            prev_levels = levels
+        levels = ticker.MaxNLocator(len(plot.levels)).tick_values(*lims)
+        lims = (levels[0], levels[-1])
 
-            lower = lims[0] - step
-            upper = lims[1] + step
-
-            levels = numpy.arange(-step, lower, -step * 2)[::-1]
-            levels = numpy.append(levels, numpy.arange(step, upper, step * 2))
-
-            if len(levels) > 12:
-                levels = prev_levels
-                break
-            elif len(levels) > 10:
-                ticks = numpy.arange(-step * 3, lower, -step * 4)[::-1]
-                ticks = numpy.append(ticks, numpy.arange(step * 3, upper, step * 4))
-                ticks = numpy.insert(ticks, len(ticks) // 2, 0)
-            else:
-                ticks = levels
-
+        # Always center on the same color
         lim = max(-lims[0], lims[1])
         norm = colors.Normalize(-lim, lim)
 
         colormap = colormaps['RdBu_r']
 
+        # Map both segments around zero to 0.5
+        color_space = colormap(numpy.linspace(0, 0.5, len(levels) // 2))
+        color_space = numpy.append(color_space, colormap(numpy.linspace(0.5, 1, len(levels) // 2)), axis=0)
+        colormap = colors.LinearSegmentedColormap.from_list('map', color_space)
+
+        # Fix the under and over colors to be the next segment color
         under = None
         if lim > -lims[0]:
             under = colormap((lims[0] + lim) / (2 * lim))
@@ -198,7 +187,7 @@ def plot_masked_contour(x, y, value, unit, lims=None):
         if lim > lims[1]:
             over = colormap((lims[1] + lim) / (2 * lim))
 
-        colormap = colormap.with_extremes(under=under, over=over)
+        colormap.set_extremes(under=under, over=over)
 
     pyplot.figure(figsize=(7, 3.5))
 

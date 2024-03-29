@@ -238,7 +238,7 @@ def plot_amoc(pop_instance, name="amoc.eps"):
 
     val = numpy.ma.array(psim, mask=mask)
 
-    pop.plot_masked_contour(y, -z, val.T, 'Sv', lims=[-6, 16])
+    pop.plot_masked_contour(y, -z, val.T, 'Sv', lims=[-5, 15])
 
     pyplot.xticks([-20, 0, 20, 40, 60], ['20°S', '0°', '20°N', '40°N', '60°N'])
     pyplot.xlim(-30, 70)
