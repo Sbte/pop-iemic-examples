@@ -164,7 +164,7 @@ def plot_masked_contour(x, y, value, unit, lims=None, levels=None):
         if lims is None:
             lims = (plot.levels[0], plot.levels[-1])
 
-        levels = ticker.MaxNLocator(len(plot.levels)).tick_values(*lims)
+        levels = ticker.MaxNLocator(len(plot.levels) * 2).tick_values(*lims)
         lims = (levels[0], levels[-1])
 
         # Always center on the same color
