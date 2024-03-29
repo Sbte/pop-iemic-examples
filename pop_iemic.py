@@ -200,19 +200,20 @@ def amoc(pop_instance):
 
         pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
 
-    amoc_depth = pop_amoc_state.elements.depth.value_in(units.km)
-    depth = pop_instance.elements.depth.value_in(units.km)
+    depth = pop_amoc_state.elements.depth.value_in(units.km)
+    z = pop_instance.elements3d.z[0, 0, :].value_in(units.km)
 
     yvel = pop_instance.nodes3d.yvel.copy()
     for i in range(yvel.shape[0]):
         for j in range(yvel.shape[1]):
-            if depth[i, j] > amoc_depth[i, j]:
-                yvel[i, j, :] = 0 | units.m / units.s
+            for k in range(z.shape[0]):
+                if depth[i, j] < z[k]:
+                    yvel[i, j, k] = 0 | units.m / units.s
 
     pop_amoc_state.nodes3d.yvel = yvel
 
-    y = pop_instance.nodes3d.lat[0, :, 0]
-    yi = [i for i, v in enumerate(y) if v.value_in(units.deg) > -30]
+    y = pop_instance.nodes3d.lat[0, :, 0].value_in(units.deg)
+    yi = [i for i, v in enumerate(y) if v > -30]
 
     psim = pop.overturning_streamfunction(pop_amoc_state)
     return psim[yi, :]
