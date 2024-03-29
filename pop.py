@@ -197,7 +197,7 @@ def plot_masked_contour(x, y, value, unit, lims=None, levels=None):
     pyplot.colorbar(label=unit, ticks=ticks)
 
 
-def plot_globe(p, value, unit, name, elements=False):
+def plot_globe(p, value, unit, name, elements=False, lims=None):
     mask = p.elements.depth.value_in(units.km) == 0
     value = numpy.ma.array(value, mask=mask)
 
@@ -219,7 +219,7 @@ def plot_globe(p, value, unit, name, elements=False):
     x = x[i]
     x[0] -= 360
 
-    plot_masked_contour(x, y, value.T, unit)
+    plot_masked_contour(x, y, value.T, unit, lims=lims)
 
     pyplot.xticks([-180, -120, -60, 0, 60, 120, 180],
                   ['180°W', '120°W', '60°W', '0°', '60°E', '120°E', '180°E'])
@@ -353,7 +353,7 @@ def barotropic_streamfunction(p):
 def plot_barotropic_streamfunction(p, name="bstream.eps"):
     # psib = psib.value_in(units.Sv)[:, 1:]
     psib = barotropic_streamfunction(p)
-    plot_globe(p, psib[:, 1:], "Sv", name)
+    plot_globe(p, psib[:, 1:], "Sv", name, lims=(-60, 150))
 
 
 def overturning_streamfunction(p):
