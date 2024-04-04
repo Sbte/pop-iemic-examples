@@ -155,16 +155,17 @@ def plot_masked_contour(x, y, value, unit, lims=None, levels=None):
     plot = pyplot.contourf(x, y, value, levels=levels)
     pyplot.close()
 
+    norm = None
     ticks = None
-    levels = None
     colormap = 'viridis'
+
+    if lims is None:
+        lims = (plot.levels[0], plot.levels[-1])
+
+    levels = ticker.MaxNLocator(len(plot.levels) * 2).tick_values(*lims)
 
     # Center the plot_levels if necessary
     if plot.levels[0] < 0 and plot.levels[-1] > 0:
-        if lims is None:
-            lims = (plot.levels[0], plot.levels[-1])
-
-        levels = ticker.MaxNLocator(len(plot.levels) * 2).tick_values(*lims)
         lims = (levels[0], levels[-1])
 
         # Always center on the same color
