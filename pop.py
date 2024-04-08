@@ -151,7 +151,7 @@ def evolve(p, tend=10 | units.day, dt=1.0 | units.day):
         print("evolve to", t, flush=True)
 
 
-def plot_masked_contour(x, y, value, unit, lims=None, levels=None, ticks=None):
+def plot_masked_contour(x, y, value, unit, lims=None, levels=None, ticks=None, contour_lines=None):
     plot = pyplot.contourf(x, y, value, levels=levels)
     pyplot.close()
 
@@ -189,6 +189,13 @@ def plot_masked_contour(x, y, value, unit, lims=None, levels=None, ticks=None):
     pyplot.contourf(x, y, value, cmap=colormap, norm=norm, levels=levels, extend='both')
 
     pyplot.colorbar(label=unit, ticks=ticks)
+
+    if contour_lines:
+        if not numpy.isscalar(contour_lines):
+            levels = numpy.array(contour_lines)
+        else:
+            levels = numpy.delete(levels, numpy.argmin(abs(levels)))
+        pyplot.contour(x, y, value, colors="black", norm=norm, levels=levels)
 
 
 def plot_globe(p, value, unit, name, elements=False, lims=None, levels=None, ticks=None):
