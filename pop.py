@@ -151,18 +151,20 @@ def evolve(p, tend=10 | units.day, dt=1.0 | units.day):
         print("evolve to", t, flush=True)
 
 
-def plot_masked_contour(x, y, value, unit, lims=None, levels=None):
+def plot_masked_contour(x, y, value, unit, lims=None, levels=None, ticks=None):
     plot = pyplot.contourf(x, y, value, levels=levels)
     pyplot.close()
 
     norm = None
-    ticks = None
     colormap = 'viridis'
 
     if lims is None:
         lims = (plot.levels[0], plot.levels[-1])
 
-    levels = ticker.MaxNLocator(len(plot.levels) * 2).tick_values(*lims)
+    if levels is None:
+        levels = ticker.MaxNLocator(len(plot.levels) * 2).tick_values(*lims)
+    else:
+        levels = numpy.array(levels)
 
     # Center the plot_levels if necessary
     if plot.levels[0] < 0 and plot.levels[-1] > 0:
@@ -171,24 +173,15 @@ def plot_masked_contour(x, y, value, unit, lims=None, levels=None):
         # Always center on the same color
         lim = max(-lims[0], lims[1])
         norm = colors.Normalize(-lim, lim)
-
         colormap = colormaps['RdBu_r']
 
         # Map both segments around zero to 0.5
-        color_space = colormap(numpy.linspace(0, 0.5, len(levels) // 2))
-        color_space = numpy.append(color_space, colormap(numpy.linspace(0.5, 1, len(levels) // 2)), axis=0)
-        colormap = colors.LinearSegmentedColormap.from_list('map', color_space)
+        center = numpy.argwhere(levels >= 0).flatten()[0]
+        color_space = numpy.linspace((lims[0] + lim) / lim / 2, 0.5, center + 1)
+        color_space = numpy.append(color_space, numpy.linspace(0.5, (lims[1] + lim) / lim / 2, len(levels) - center), axis=0)
+        color_space = colormap(color_space)
 
-        # Fix the under and over colors to be the next segment color
-        under = None
-        if lim > -lims[0]:
-            under = colormap((lims[0] + lim) / (2 * lim))
-
-        over = None
-        if lim > lims[1]:
-            over = colormap((lims[1] + lim) / (2 * lim))
-
-        colormap.set_extremes(under=under, over=over)
+        colormap, norm = colors.from_levels_and_colors(levels, color_space, extend='both')
 
     pyplot.figure(figsize=(7, 3.5))
 
@@ -198,7 +191,7 @@ def plot_masked_contour(x, y, value, unit, lims=None, levels=None):
     pyplot.colorbar(label=unit, ticks=ticks)
 
 
-def plot_globe(p, value, unit, name, elements=False, lims=None):
+def plot_globe(p, value, unit, name, elements=False, lims=None, levels=None, ticks=None):
     mask = p.elements.depth.value_in(units.km) == 0
     value = numpy.ma.array(value, mask=mask)
 
@@ -220,7 +213,7 @@ def plot_globe(p, value, unit, name, elements=False, lims=None):
     x = x[i]
     x[0] -= 360
 
-    plot_masked_contour(x, y, value.T, unit, lims=lims)
+    plot_masked_contour(x, y, value.T, unit, lims=lims, levels=levels, ticks=ticks)
 
     pyplot.xticks([-180, -120, -60, 0, 60, 120, 180],
                   ['180°W', '120°W', '60°W', '0°', '60°E', '120°E', '180°E'])
@@ -352,9 +345,14 @@ def barotropic_streamfunction(p):
 
 
 def plot_barotropic_streamfunction(p, name="bstream.eps"):
-    # psib = psib.value_in(units.Sv)[:, 1:]
     psib = barotropic_streamfunction(p)
-    plot_globe(p, psib[:, 1:], "Sv", name, lims=(-60, 150))
+
+    levels = numpy.arange(-70, -20, 10)
+    levels = numpy.append(levels, numpy.arange(-20, 20, 2))
+    levels = numpy.append(levels, numpy.arange(20, 180, 10))
+    ticks = [-70, -20, -10, -0, 10, 20, 70, 120, 170]
+
+    plot_globe(p, psib[:, 1:], "Sv", name, levels=levels, ticks=ticks)
 
 
 def overturning_streamfunction(p):
