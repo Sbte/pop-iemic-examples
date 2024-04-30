@@ -35,3 +35,9 @@ Utility files
   interface and POP state files.
   - `pop_iemic.py`: Utility functions that implement the coupling
     between POp and I-EMIC.
+
+POP input files
+---------------
+
+  - `pop_in`: Detailed mixing scenario.
+  - `pop_in_simp`: Simplified mixing scenario.
