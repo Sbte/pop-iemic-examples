@@ -241,6 +241,8 @@ def plot_amoc(pop_instance, name="amoc.eps"):
 
     pop.plot_masked_contour(y, -z, val.T, 'Sv', lims=[-5, 15], contour_lines=True)
 
+    pyplot.subplots_adjust(0.11, 0.1, 1.0, 0.95)
+
     pyplot.xticks([-20, 0, 20, 40, 60], ['20°S', '0°', '20°N', '40°N', '60°N'])
     pyplot.xlim(-30, 70)
     yticks = [0, -1000, -2000, -3000, -4000, -5000]

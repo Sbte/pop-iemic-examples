@@ -222,6 +222,8 @@ def plot_globe(p, value, unit, name, elements=False, lims=None, levels=None, tic
 
     plot_masked_contour(x, y, value.T, unit, lims=lims, levels=levels, ticks=ticks)
 
+    pyplot.subplots_adjust(0.08, 0.1, 1.03, 0.95)
+
     pyplot.xticks([-180, -120, -60, 0, 60, 120, 180],
                   ['180°W', '120°W', '60°W', '0°', '60°E', '120°E', '180°E'])
     pyplot.yticks([-60, -30, 0, 30, 60],
