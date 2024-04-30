@@ -1,5 +1,5 @@
-Examples of POP and IEMIC runs
-==============================
+Examples of POP and I-EMIC runs
+===============================
 
 This repository contains OMUSE run scripts that illustrate various 
 couplings between the POP ocean model and the I-EMIC implicit ocean model.
