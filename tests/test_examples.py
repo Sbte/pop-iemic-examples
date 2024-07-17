@@ -4,7 +4,7 @@ import shutil
 from omuse.units import units
 
 def test_iemic_continuation():
-    from example_iemic_continuation import run_continuation
+    from run_iemic_continuation import run_continuation
 
     os.chdir('tests')
 
@@ -22,7 +22,7 @@ def test_iemic_continuation():
 
 
 def test_restart_iemic_continuation():
-    from example_iemic_continuation import run_continuation
+    from run_iemic_continuation import run_continuation
 
     os.chdir('tests')
 
@@ -37,7 +37,7 @@ def test_restart_iemic_continuation():
 
 
 def test_pop():
-    from example_pop import run
+    from run_pop import run
 
     os.chdir('tests')
 
@@ -55,8 +55,8 @@ def test_pop():
     os.chdir('..')
 
 
-def test_pop_pop_state():
-    from example_pop_pop_state import run
+def test_pop_pop():
+    from run_pop_pop import run
 
     os.chdir('tests')
 
@@ -72,8 +72,8 @@ def test_pop_pop_state():
     os.chdir('..')
 
 
-def test_restart_pop():
-    from example_restart_pop import run
+def test_pop_restart():
+    from run_pop_restart import run
 
     os.chdir('tests')
 
@@ -93,8 +93,8 @@ def test_restart_pop():
     os.chdir('..')
 
 
-def test_pop_iemic_state():
-    from example_pop_iemic_state import run
+def test_pop_iemic():
+    from run_pop_iemic import run
 
     os.chdir('tests')
 
