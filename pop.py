@@ -637,6 +637,7 @@ def read_pop_state(label, directory="./"):
 def long_evolve(p, tend=100.0 | units.julianyr, dt=100.0 | units.day, dt2=1.0 | units.day, i0=0, snapdir="snapshots", seasonal_dt=None):
     tnow = p.model_time
     tstart = tnow
+    tnext = tnow
 
     t1 = time.time()
 
@@ -649,7 +650,7 @@ def long_evolve(p, tend=100.0 | units.julianyr, dt=100.0 | units.day, dt2=1.0 | 
 
     i = i0
     while tnow < tend + dt / 2:
-        tnext = tnow + dt
+        tnext = tnext + dt
 
         # save
         label = "state_{0:06}".format(i)
