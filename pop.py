@@ -137,6 +137,23 @@ def initialize_pop(depth_levels, depth_array, mode=None, number_of_workers=6):
     return p
 
 
+def set_idealized_forcing(p):
+    y = p.nodes.lat.value_in(units.rad)
+    tmp = p.forcings.copy()
+    tau0 = 0.1
+    tmp.tau_x = tau0 * (0.2 - 0.8 * numpy.sin(6 * numpy.abs(y))
+                        - 0.5 * (1 - numpy.tanh(10 * numpy.abs(y)))
+                        - 0.5 * (1 - numpy.tanh(10 * (numpy.pi / 2 - numpy.abs(y))))) | units.Pa
+
+    channel = tmp.new_channel_to(p.forcings)
+    # channel.copy_attributes(["tau_x, tau_y"])
+    channel.copy_attributes(["tau_x", "tau_y"], target_names=["tau_x", "tau_y"])
+
+    y = p.elements.lat.value_in(units.rad) / (81 / 180 * numpy.pi)
+    p.element_forcings.restoring_temp = 15 + 10 * numpy.cos(numpy.pi * y) | units.Celsius
+    p.element_forcings.restoring_salt = 35 + numpy.cos(numpy.pi * y) | units.psu
+
+
 def evolve(p, tend=10 | units.day, dt=1.0 | units.day):
     tnow = p.model_time
     tend = tnow + tend
