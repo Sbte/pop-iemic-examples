@@ -36,7 +36,7 @@
   laccel            = .false.
   accel_file        = 'depth_accel'
   dtuxcel           = 1.0
-  allow_leapyear    = .false.
+  allow_leapyear    = .true.
   iyear0            = 0
   imonth0           = 1
   iday0             = 1

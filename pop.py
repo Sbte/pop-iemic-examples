@@ -634,7 +634,7 @@ def read_pop_state(label, directory="./"):
     return p
 
 
-def long_evolve(p, tend=100.0 | units.yr, dt=100.0 | units.day, dt2=1.0 | units.day, i0=0, snapdir="snapshots"):
+def long_evolve(p, tend=100.0 | units.julianyr, dt=100.0 | units.day, dt2=1.0 | units.day, i0=0, snapdir="snapshots", seasonal_dt=None):
     tnow = p.model_time
     tstart = tnow
 
@@ -665,8 +665,11 @@ def long_evolve(p, tend=100.0 | units.yr, dt=100.0 | units.day, dt2=1.0 | units.
         psim_max = max(psim.flatten())
 
         with open(tdata, "a") as f:
-            t = p.model_time.value_in(units.yr)
+            t = p.model_time.value_in(units.julianyr)
             f.write("%.8e %.8e %.8e %.8e %.8e\n" % (t, psib_min, psib_max, psim_min, psim_max))
+
+        if tnow >= tend:
+            break
 
         print(p.evolve_model(tnow + dt2), flush=True)
 
@@ -675,14 +678,24 @@ def long_evolve(p, tend=100.0 | units.yr, dt=100.0 | units.day, dt2=1.0 | units.
 
         t2 = time.time()
         eta = (tend - tnow - dt2) / ((tnow + dt2 - tstart) / (t2 - t1))
-        print((t2 - t1) / 3600, "| evolve to", tnext.in_(units.yr), " ETA (hr):", eta / 3600.0, flush=True)
+        print((t2 - t1) / 3600, "| evolve to", tnext.in_(units.julianyr), " ETA (hr):", eta / 3600.0, flush=True)
 
-        p.evolve_model(tnext)
-        tnow = p.model_time
+        if seasonal_dt is not None:
+            while tnow < tnext - seasonal_dt / 2:
+                ynow = tnow.value_in(units.julianyr)
+                print(f"Applying seasonal forcing at time: {ynow}", flush=True)
+                set_seasonal_forcing(p, ynow)
+
+                p.evolve_model(tnow + seasonal_dt)
+                tnow = p.model_time
+        else:
+            p.evolve_model(tnext)
+            tnow = p.model_time
+
         i = i + 1
 
 
-def long_restart(p, ibegin, tend=100.0 | units.yr, dt=100.0 | units.day, loaddir="snapshots", snapdir="snapshots"):
+def long_restart(p, ibegin, tend=100.0 | units.julianyr, dt=100.0 | units.day, loaddir="snapshots", snapdir="snapshots"):
     label = "state_{0:06}".format(ibegin)
     tsnap = ibegin * dt
     reset_pop_state(p, label, snapdir=loaddir)
