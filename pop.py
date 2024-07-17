@@ -154,6 +154,24 @@ def set_idealized_forcing(p):
     p.element_forcings.restoring_salt = 35 + numpy.cos(numpy.pi * y) | units.psu
 
 
+def set_seasonal_forcing(p, t):
+    set_idealized_forcing(p)
+
+    y = p.nodes.lat.value_in(units.rad)
+    tmp = p.forcings.copy()
+    tau0 = 0.1
+    tmp.tau_x = tmp.tau_x + (tau0 * (2 * y * numpy.exp(-(2 * y) ** 2)
+                                     * numpy.cos((t + 5 / 12) * numpy.pi * 2)) | units.Pa)
+
+    channel = tmp.new_channel_to(p.forcings)
+    # channel.copy_attributes(["tau_x, tau_y"])
+    channel.copy_attributes(["tau_x", "tau_y"], target_names=["tau_x", "tau_y"])
+
+    y = p.elements.lat.value_in(units.rad) / (81 / 180 * numpy.pi)
+    p.element_forcings.restoring_temp = 15 + 10 * numpy.cos(numpy.pi * (
+        y + 0.11 * numpy.cos(2 * numpy.pi * (t - 1 / 12)))) | units.Celsius
+
+
 def evolve(p, tend=10 | units.day, dt=1.0 | units.day):
     tnow = p.model_time
     tend = tnow + tend
