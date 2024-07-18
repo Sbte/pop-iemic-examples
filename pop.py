@@ -568,6 +568,17 @@ def plot_tdata(directory="snapshots", fname="tdata.txt"):
     pyplot.close()
 
 
+def save_fields(p, label, directory="./"):
+    if not os.path.exists(directory):
+        os.mkdir(directory)
+
+    fname = os.path.join(directory, label + "_amoc")
+    numpy.save(fname, amoc(p))
+
+    fname = os.path.join(directory, label + "_bstream")
+    numpy.save(fname, barotropic_streamfunction(p))
+
+
 def save_pop_state(p, label, directory="./"):
     if not os.path.exists(directory):
         os.mkdir(directory)
@@ -577,6 +588,8 @@ def save_pop_state(p, label, directory="./"):
         fname = os.path.join(directory, label + "_" + d + ".amuse")
         write_set_to_file(getattr(p, d), fname, "amuse", overwrite_file=True)
         shutil.copy(fname, os.path.join(directory, "latest_" + d + ".amuse"))
+
+    save_fields(p, label, directory)
 
 
 def reset_pop_state(p, label, snapdir="snapshots"):
@@ -728,7 +741,7 @@ def long_evolve(p, tend=100.0 | units.julianyr, dt=100.0 | units.day, dt2=1.0 | 
         tnext = tnext + dt
 
         # save
-        label = "state_{0:06}".format(i)
+        label = f"state_{i:06}"
         save_pop_state(p, label, directory=snapdir)
 
         psib = barotropic_streamfunction(p)
@@ -757,6 +770,7 @@ def long_evolve(p, tend=100.0 | units.julianyr, dt=100.0 | units.day, dt2=1.0 | 
         print((t2 - t1) / 3600, "| evolve to", tnext.in_(units.julianyr), " ETA (hr):", eta / 3600.0, flush=True)
 
         if seasonal_dt is not None:
+            j = 1
             while tnow < tnext - seasonal_dt / 2:
                 ynow = tnow.value_in(units.julianyr)
                 print(f"Applying seasonal forcing at time: {ynow}", flush=True)
@@ -764,11 +778,16 @@ def long_evolve(p, tend=100.0 | units.julianyr, dt=100.0 | units.day, dt2=1.0 | 
 
                 p.evolve_model(tnow + seasonal_dt)
                 tnow = p.model_time
+
+                label = f"state_{i:06}_{j:06}"
+                save_fields(p, label, directory=snapdir)
+
+                j += 1
         else:
             p.evolve_model(tnext)
             tnow = p.model_time
 
-        i = i + 1
+        i += 1
 
 
 def long_restart(p, ibegin, tend=100.0 | units.julianyr, dt=100.0 | units.day, loaddir="snapshots", snapdir="snapshots"):
