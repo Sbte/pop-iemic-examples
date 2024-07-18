@@ -66,3 +66,11 @@ def read_global_mask(filename):
     mask = mask[1:-1, 1:-1, 1:-1]  # ignore edges
 
     return mask[:, ::-1, :]  # reorient
+
+
+def depth_levels(N, stretch_factor=1.8):
+    z = numpy.arange(N) / (1.0 * (N - 1))
+    if stretch_factor == 0:
+        return z
+    else:
+        return 1 - numpy.tanh(stretch_factor * (1 - z)) / numpy.tanh(stretch_factor)

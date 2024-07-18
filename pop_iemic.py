@@ -96,7 +96,7 @@ def compute_depth_index(iemic_state, Nx, Ny, number_of_workers=4):
 
 
 def compute_depth_index_from_mask(mask):
-    levels = iemic.depth_levels(13) * 5000 | units.m
+    levels = utils.depth_levels(13) * 5000 | units.m
 
     depth = numpy.zeros((mask.shape[0], mask.shape[1] + 2), dtype=int)
     for k in range(mask.shape[2]):

@@ -38,14 +38,6 @@ def z_from_center(zc, firstlevel=None):
     return z[::direction]
 
 
-def depth_levels(N, stretch_factor=1.8):
-    z = numpy.arange(N) / (1.0 * (N - 1))
-    if stretch_factor == 0:
-        return z
-    else:
-        return 1 - numpy.tanh(stretch_factor * (1 - z)) / numpy.tanh(stretch_factor)
-
-
 def depth_array(filename):
     mask = utils.read_global_mask(filename)
     return depth_array_from_mask(mask)
