@@ -6,7 +6,6 @@ import pop
 import utils
 
 from omuse.units import units
-from amuse.io.base import IoException
 
 from amuse.ext.grid_remappers import bilinear_2D_remapper
 
@@ -169,45 +168,8 @@ def initialize_pop_with_pop_setup(number_of_workers=6, label="latest",
     return pop_instance
 
 
-def amoc(pop_instance):
-    try:
-        pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
-    except IoException:
-        Nx, Ny, Nz = pop_instance.mode.split('x')
-        Ny = str(int(Ny) - 2)
-
-        mask = utils.read_global_mask(f"mkmask/amoc_{Nx}x{Ny}x{Nz}.mask")
-
-        amoc_pop_instance = initialize_pop(iemic_mask=mask)
-
-        assert amoc_pop_instance.mode == pop_instance.mode
-
-        pop.save_pop_state(amoc_pop_instance, "amoc_state_" + pop_instance.mode)
-        amoc_pop_instance.stop()
-
-        pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
-
-    depth = pop_amoc_state.elements.depth.value_in(units.km)
-    z = pop_instance.elements3d.z[0, 0, :].value_in(units.km)
-
-    yvel = pop_instance.nodes3d.yvel.copy()
-    for i in range(yvel.shape[0]):
-        for j in range(yvel.shape[1]):
-            for k in range(z.shape[0]):
-                if depth[i, j] < z[k]:
-                    yvel[i, j, k] = 0 | units.m / units.s
-
-    pop_amoc_state.nodes3d.yvel = yvel
-
-    y = pop_instance.nodes3d.lat[0, :, 0].value_in(units.deg)
-    yi = [i for i, v in enumerate(y) if v > -30]
-
-    psim = pop.overturning_streamfunction(pop_amoc_state)
-    return psim[yi, :]
-
-
 def plot_amoc(pop_instance, name="amoc.eps"):
-    psim = amoc(pop_instance)
+    psim = pop.amoc(pop_instance)
 
     pop_amoc_state = pop.read_pop_state("amoc_state_" + pop_instance.mode)
 

@@ -9,6 +9,7 @@ from omuse.units import units, constants
 
 from amuse.io import write_set_to_file, read_set_from_file
 from amuse.ext.grid_remappers import bilinear_2D_remapper
+from amuse.io.base import IoException
 
 from functools import partial
 
@@ -439,6 +440,47 @@ def plot_overturning_streamfunction(p, name="mstream.eps"):
     pyplot.xlim(y[1], y[-2])
     pyplot.savefig(name)
     pyplot.close()
+
+
+def amoc(pop_instance):
+    try:
+        pop_amoc_state = read_pop_state("amoc_state_" + pop_instance.mode)
+    except IoException:
+        Nx, Ny, Nz = pop_instance.mode.split('x')
+        Ny = str(int(Ny) - 2)
+
+        mask = utils.read_global_mask(f"mkmask/amoc_{Nx}x{Ny}x{Nz}.mask")
+        levels, depth = utils.compute_depth_index_from_mask(mask)
+
+        Nx = depth.shape[0]
+        Ny = depth.shape[1]
+
+        amoc_pop_instance = initialize_pop(levels, depth, mode=f"{Nx}x{Ny}x12")
+
+        assert amoc_pop_instance.mode == pop_instance.mode
+
+        save_pop_state(amoc_pop_instance, "amoc_state_" + pop_instance.mode)
+        amoc_pop_instance.stop()
+
+        pop_amoc_state = read_pop_state("amoc_state_" + pop_instance.mode)
+
+    depth = pop_amoc_state.elements.depth.value_in(units.km)
+    z = pop_instance.elements3d.z[0, 0, :].value_in(units.km)
+
+    yvel = pop_instance.nodes3d.yvel.copy()
+    for i in range(yvel.shape[0]):
+        for j in range(yvel.shape[1]):
+            for k in range(z.shape[0]):
+                if depth[i, j] < z[k]:
+                    yvel[i, j, k] = 0 | units.m / units.s
+
+    pop_amoc_state.nodes3d.yvel = yvel
+
+    y = pop_instance.nodes3d.lat[0, :, 0].value_in(units.deg)
+    yi = [i for i, v in enumerate(y) if v > -30]
+
+    psim = overturning_streamfunction(pop_amoc_state)
+    return psim[yi, :]
 
 
 def depth_integrated_temperature(p, max_depth=None):
