@@ -12,7 +12,7 @@ from amuse.ext.grid_remappers import bilinear_2D_remapper
 
 from functools import partial
 
-import bstream
+import utils
 
 numpy.random.seed(123451)
 
@@ -384,7 +384,7 @@ def barotropic_streamfunction(p):
     dy = (y[1] - y[0]).value_in(units.rad)
     dy *= constants.Rearth
 
-    psib = bstream.barotropic_streamfunction(u, dz, dy)
+    psib = utils.barotropic_streamfunction(u, dz, dy)
     return psib.value_in(units.Sv)
 
 
@@ -416,7 +416,7 @@ def overturning_streamfunction(p):
     dx *= numpy.cos(p.nodes3d[0, :, 0].lat.value_in(units.rad))
     dx *= constants.Rearth
 
-    psim = bstream.overturning_streamfunction(v, dz, dx)
+    psim = utils.overturning_streamfunction(v, dz, dx)
     return psim.value_in(units.Sv)
 
 

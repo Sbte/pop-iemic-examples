@@ -14,7 +14,7 @@ from omuse.units import units, constants, quantities
 
 from omuse.community.iemic.interface import iemic
 
-import bstream
+import utils
 
 from fvm import Continuation
 
@@ -694,7 +694,7 @@ def barotropic_streamfunction(state):
     dy = (y[1] - y[0]).value_in(units.rad)
     dy *= constants.Rearth
 
-    psib = bstream.barotropic_streamfunction(u, dz, dy)
+    psib = utils.barotropic_streamfunction(u, dz, dy)
     return psib.value_in(units.Sv)
 
 
@@ -729,7 +729,7 @@ def overturning_streamfunction(state):
     dx *= numpy.cos(state.v_grid.lat.value_in(units.rad)[0, :, 0])
     dx *= constants.Rearth
 
-    psim = bstream.overturning_streamfunction(v, dz, dx)
+    psim = utils.overturning_streamfunction(v, dz, dx)
     return psim.value_in(units.Sv)
 
 
