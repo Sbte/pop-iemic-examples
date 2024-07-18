@@ -95,26 +95,12 @@ def compute_depth_index(iemic_state, Nx, Ny, number_of_workers=4):
     return levels, depth
 
 
-def compute_depth_index_from_mask(mask):
-    levels = utils.depth_levels(13) * 5000 | units.m
-
-    depth = numpy.zeros((mask.shape[0], mask.shape[1] + 2), dtype=int)
-    for k in range(mask.shape[2]):
-        for j in range(mask.shape[1]):
-            for i in range(mask.shape[0]):
-                if not depth[i, j+1]:
-                    if mask[i, j, k] == 0:
-                        depth[i, j+1] = 12 - k
-
-    return levels, depth
-
-
 def initialize_pop(number_of_workers=6, iemic_state=None, iemic_mask=None):
     if not iemic_state:
         iemic_state = iemic.read_iemic_state_with_units(state_name)
 
     if iemic_mask is not None:
-        levels, depth = compute_depth_index_from_mask(iemic_mask)
+        levels, depth = utils.compute_depth_index_from_mask(iemic_mask)
     else:
         levels, depth = compute_depth_index(iemic_state, 120, 56)
 

@@ -1,5 +1,7 @@
 import numpy
 
+from omuse.units import units
+
 
 def barotropic_streamfunction(u, dz, dy):
     """
@@ -74,3 +76,17 @@ def depth_levels(N, stretch_factor=1.8):
         return z
     else:
         return 1 - numpy.tanh(stretch_factor * (1 - z)) / numpy.tanh(stretch_factor)
+
+
+def compute_depth_index_from_mask(mask):
+    levels = depth_levels(13) * 5000 | units.m
+
+    depth = numpy.zeros((mask.shape[0], mask.shape[1] + 2), dtype=int)
+    for k in range(mask.shape[2]):
+        for j in range(mask.shape[1]):
+            for i in range(mask.shape[0]):
+                if not depth[i, j+1]:
+                    if mask[i, j, k] == 0:
+                        depth[i, j+1] = 12 - k
+
+    return levels, depth
