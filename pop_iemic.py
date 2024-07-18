@@ -3,6 +3,7 @@ from matplotlib import pyplot
 
 import iemic
 import pop
+import utils
 
 from omuse.units import units
 from amuse.io.base import IoException
@@ -189,7 +190,7 @@ def amoc(pop_instance):
         Nx, Ny, Nz = pop_instance.mode.split('x')
         Ny = str(int(Ny) - 2)
 
-        mask = iemic.read_global_mask(f"mkmask/amoc_{Nx}x{Ny}x{Nz}.mask")
+        mask = utils.read_global_mask(f"mkmask/amoc_{Nx}x{Ny}x{Nz}.mask")
 
         amoc_pop_instance = initialize_pop(iemic_mask=mask)
 

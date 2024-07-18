@@ -3,9 +3,9 @@ import os
 
 from omuse.units import units
 
-import iemic
 import pop_iemic
 import pop
+import utils
 
 
 def run(tend=10 | units.day, dt=1 | units.day, argv=[]):
@@ -27,7 +27,7 @@ def run(tend=10 | units.day, dt=1 | units.day, argv=[]):
 
     snapdir = directory + '-2'
 
-    mask = iemic.read_global_mask('mkmask/global_240x108x12.mask')
+    mask = utils.read_global_mask('mkmask/global_240x108x12.mask')
     pop_instance = pop_iemic.initialize_pop_with_pop_setup(
         6, label=label, snapdir=directory, iemic_mask=mask)
 

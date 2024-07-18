@@ -46,29 +46,8 @@ def depth_levels(N, stretch_factor=1.8):
         return 1 - numpy.tanh(stretch_factor * (1 - z)) / numpy.tanh(stretch_factor)
 
 
-def read_global_mask(filename):
-    mask = None
-    with open(filename, "r") as f:
-        for line in f.readlines():
-            if line.startswith('%'):
-                Nx, Ny, Nz, level = [int(i) for i in line.split(' ')[1:]]
-
-                j = 0
-                if mask is None:
-                    mask = numpy.zeros((Nx + 2, Ny + 2, Nz + 2), dtype="int")
-
-                continue
-
-            mask[:, j, level - 1] = numpy.array([int(d) for d in line[:-1]])  # ignore newline
-            j += 1
-
-    mask = mask[1:-1, 1:-1, 1:-1]  # ignore edges
-
-    return mask[:, ::-1, :]  # reorient
-
-
 def depth_array(filename):
-    mask = read_global_mask(filename)
+    mask = utils.read_global_mask(filename)
     return depth_array_from_mask(mask)
 
 
